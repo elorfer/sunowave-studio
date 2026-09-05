@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "sunowave-studio",
+  "rewrites": [
+    {
+      "source": "/api/proxy",
+      "destination": "/api/proxy"
+    }
+  ]
+}
