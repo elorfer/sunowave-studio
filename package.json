@@ -1,0 +1,12 @@
+{
+  "name": "sunowave-studio",
+  "version": "1.0.0",
+  "description": "Herramienta profesional de descarga, descifrado y recorte de audio para Suno AI",
+  "main": "index.html",
+  "scripts": {
+    "start": "powershell -ExecutionPolicy Bypass -File ./server.ps1"
+  },
+  "keywords": ["suno", "audio", "trimmer", "downloader", "studio"],
+  "author": "",
+  "license": "MIT"
+}
