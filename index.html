@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SunoWave Studio - Descargador de Canciones de Suno AI</title>
+  <meta name="description" content="Descarga canciones, videos, audios en MP3/M4A, carátulas y letras de Suno AI con la máxima calidad y visualizador en tiempo real.">
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
+  <link rel="stylesheet" href="css/style.css?v=7">
+  <!-- LameJS para codificación de MP3 rápida en el navegador -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Barra de Navegación -->
+    <header class="navbar">
+      <a href="#" class="brand-logo">
+        <img src="assets/logo.jpg" alt="SunoWave Logo">
+        <div>
+          <span class="brand-title">SunoWave</span>
+          <span class="brand-badge">v4 Studio</span>
+        </div>
+      </a>
+
+      <nav class="nav-tabs">
+        <button class="nav-tab-btn active" data-tab="tab-single">
+          <span>🎵</span> Individual
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-batch">
+          <span>📑</span> Por Lotes
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-history">
+          <span>🕒</span> Historial
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-transcribe">
+          <span>🎤</span> Transcribir
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-trimmer">
+          <span>✂️</span> Cortador & Muestras
+        </button>
+      </nav>
+    </header>
+
+    <!-- Contenido: Pestaña Individual -->
+    <main id="tab-single" class="tab-content active">
+      <!-- Sección Hero -->
+      <section class="hero-section">
+        <div class="hero-pill">
+          <span>⚡</span> Extractor Directo de Audio, Video y Letras de Suno AI
+        </div>
+        <h1 class="hero-title">Descarga Canciones de <span>Suno AI</span> al Instante</h1>
+        <p class="hero-subtitle">
+          Pega el enlace de cualquier canción de Suno para escucharla, visualizar sus frecuencias en vivo y descargarla en MP3 (320kbps), WAV sin pérdida, M4A de estudio, Video MP4 o portada HD.
+        </p>
+
+        <!-- Buscador de Canciones -->
+        <div class="search-card">
+          <div class="search-input-row">
+            <div class="search-icon">🔍</div>
+            <input 
+              type="text" 
+              id="song-url-input" 
+              class="search-input" 
+              placeholder="Pega aquí el enlace de Suno (ej. https://suno.com/song/7f7fbf55-1f6e-4515-a775-1ec04e2ec599)..."
+              autocomplete="off"
+            >
+            <button id="btn-paste" class="btn-paste" type="button" title="Pegar desde el portapapeles">
+              📋 Pegar
+            </button>
+            <button id="btn-analyze" class="btn-submit" type="button">
+              <span>Descargar</span> ➔
+            </button>
+          </div>
+        </div>
+
+        <div class="sample-bar" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span>¿No tienes un enlace a mano?</span>
+            <button id="btn-sample-song" class="btn-sample" type="button">
+              Cargar ejemplo: "Klingon Battle Polka" (v4)
+            </button>
+          </div>
+          <button id="btn-goto-transcribe" class="btn-sample" type="button" style="border-color: var(--neon-cyan); color: var(--neon-cyan); font-weight: 600;">
+            🎤 Subir audio de tu PC para transcribir a texto ➔
+          </button>
+        </div>
+      </section>
+
+      <!-- Caja de Carga -->
+      <div id="loading-indicator" class="loading-box">
+        <div class="loading-spinner"></div>
+        <div id="loading-text" class="loading-status-text">Conectando con los servidores de Suno...</div>
+      </div>
+
+      <!-- Tarjeta de Resultado de la Canción -->
+      <section id="result-card" class="result-card">
+        <div class="song-main-grid">
+          <!-- Carátula del Álbum -->
+          <div class="album-art-wrap">
+            <img id="res-album-art" class="album-art-img" src="" alt="Portada de la Canción">
+            <span id="res-model-badge" class="badge-version">v4</span>
+          </div>
+
+          <!-- Información y Reproductor -->
+          <div class="song-info">
+            <div>
+              <div class="song-header-top">
+                <h2 id="res-song-title" class="song-title">Título de la Canción</h2>
+              </div>
+              <div class="song-meta-row">
+                <span class="creator-name">
+                  👤 <span id="res-creator-name">Creador</span>
+                </span>
+                <span>•</span>
+                <span>⏱️ <span id="res-duration">0:00</span></span>
+                <span>•</span>
+                <span id="res-source-badge" style="color: var(--neon-cyan);">CDN Verificado</span>
+              </div>
+              <!-- Nube de Etiquetas / Géneros -->
+              <div id="res-tags-container" class="tag-cloud"></div>
+            </div>
+
+            <!-- Visualizador Canvas -->
+            <div class="visualizer-wrapper">
+              <div class="visualizer-header">
+                <span>Espectro de Frecuencias de Audio</span>
+                <span id="visualizer-status">Visualizador Activo</span>
+              </div>
+              <canvas id="audio-visualizer-canvas" class="visualizer-canvas"></canvas>
+            </div>
+
+            <!-- Controles del Reproductor -->
+            <div class="player-controls-row">
+              <button id="btn-play-toggle" class="btn-play-pause" title="Reproducir / Pausar">
+                ▶
+              </button>
+              <div class="timeline-wrap">
+                <span id="time-current" class="time-label">0:00</span>
+                <input type="range" id="seek-bar" class="scrub-bar" value="0" min="0" max="100" step="0.1">
+                <span id="time-total" class="time-label">0:00</span>
+              </div>
+              <div class="volume-wrap">
+                <span id="vol-icon" style="cursor: pointer;">🔊</span>
+                <input type="range" id="volume-bar" class="volume-slider" min="0" max="1" step="0.05" value="0.9">
+              </div>
+            </div>
+            <!-- Elemento de audio HTML5 nativo para máxima compatibilidad -->
+            <audio id="core-audio-player" preload="auto"></audio>
+          </div>
+        </div>
+
+        <!-- Opciones de Descarga -->
+        <div>
+          <h3 class="downloads-section-title">
+            <span>⚡</span> Opciones de Descarga y Exportación
+          </h3>
+          <div class="download-buttons-grid">
+            <!-- Botón 1: MP3 Alta Calidad -->
+            <button id="btn-dl-mp3" class="dl-card-btn primary-action">
+              <div class="dl-icon-badge">🎶</div>
+              <div class="dl-title">Descargar MP3 (Recomendado)</div>
+              <div class="dl-subtitle">Universal 320 kbps (Abre en Windows Media Player)</div>
+              <div id="progress-mp3" class="dl-progress-bar"></div>
+            </button>
+
+            <!-- Botón 1b: WAV Sin Pérdida -->
+            <button id="btn-dl-wav" class="dl-card-btn">
+              <div class="dl-icon-badge">🎼</div>
+              <div class="dl-title">WAV Sin Pérdida</div>
+              <div class="dl-subtitle">Calidad de estudio PCM 16-bit (100% lossless)</div>
+              <div id="progress-wav" class="dl-progress-bar"></div>
+            </button>
+
+            <!-- Botón 2: Audio AAC Compatible -->
+            <button id="btn-dl-m4a" class="dl-card-btn">
+              <div class="dl-icon-badge">🎵</div>
+              <div class="dl-title">Audio AAC (M4A)</div>
+              <div class="dl-subtitle">Audio puro de estudio sin compresión</div>
+              <div id="progress-m4a" class="dl-progress-bar"></div>
+            </button>
+
+            <!-- Botón 3: Video MP4 Oficial -->
+            <button id="btn-dl-mp4" class="dl-card-btn">
+              <div class="dl-icon-badge">🎬</div>
+              <div class="dl-title">Video MP4 Oficial</div>
+              <div class="dl-subtitle">Con animación de portada y audio</div>
+              <div id="progress-mp4" class="dl-progress-bar"></div>
+            </button>
+
+            <!-- Botón 4: Portada HD -->
+            <button id="btn-dl-art" class="dl-card-btn">
+              <div class="dl-icon-badge">🖼️</div>
+              <div class="dl-title">Carátula HD</div>
+              <div class="dl-subtitle">Imagen original en máxima resolución</div>
+            </button>
+
+            <!-- Botón 5: Letra Completa -->
+            <button id="btn-view-lyrics" class="dl-card-btn">
+              <div class="dl-icon-badge">📜</div>
+              <div class="dl-title">Ver y Descargar Letra</div>
+              <div class="dl-subtitle">Letras completas y exportación .TXT</div>
+            </button>
+
+            <!-- Botón 6: Cortador & Muestras -->
+            <button id="btn-goto-trimmer-song" class="dl-card-btn" style="border-color: rgba(108,92,231,0.5);">
+              <div class="dl-icon-badge">✂️</div>
+              <div class="dl-title">Crear Muestra / Demo</div>
+              <div class="dl-subtitle">Recorta 15s/30s con sello para clientes</div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Guía Rápida / FAQ de Formatos -->
+      <section style="margin-top: 40px; border-top: 1px solid var(--border-subtle); padding-top: 30px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+          <div style="background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <h4 style="font-family: var(--font-title); color: var(--neon-cyan); margin-bottom: 8px;">¿M4A o MP3?</h4>
+            <p style="font-size: 13px; color: var(--text-muted);">
+              <strong>M4A</strong> es el formato de transmisión nativo generado directamente por los motores de Suno (mayor fidelidad dinámica). Si necesitas máxima compatibilidad con reproductores antiguos, coches o pendrives, elige <strong>MP3 (320kbps)</strong>.
+            </p>
+          </div>
+          <div style="background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <h4 style="font-family: var(--font-title); color: var(--neon-purple); margin-bottom: 8px;">¿Qué enlaces puedo usar?</h4>
+            <p style="font-size: 13px; color: var(--text-muted);">
+              Cualquier enlace de Suno: <code>suno.com/song/...</code>, enlaces cortos <code>suno.com/s/...</code>, enlaces de la app móvil o directamente el identificador UUID de la canción.
+            </p>
+          </div>
+          <div style="background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <h4 style="font-family: var(--font-title); color: var(--neon-green); margin-bottom: 8px;">100% en tu Navegador</h4>
+            <p style="font-size: 13px; color: var(--text-muted);">
+              SunoWave procesa las descargas y conversiones directamente en tu navegador usando la Web Audio API, sin necesidad de suscripciones ni registros.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Contenido: Pestaña Por Lotes -->
+    <section id="tab-batch" class="tab-content">
+      <div class="batch-box">
+        <h2 style="font-family: var(--font-title); font-size: 26px; margin-bottom: 10px;">
+          Descarga de Canciones por Lotes
+        </h2>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
+          Pega varias URLs de Suno (una por línea). SunoWave las procesará secuencialmente para que puedas descargarlas todas fácilmente.
+        </p>
+
+        <textarea 
+          id="batch-urls-input" 
+          class="batch-textarea" 
+          placeholder="https://suno.com/song/7f7fbf55-1f6e-4515-a775-1ec04e2ec599&#10;https://suno.com/song/...&#10;..."
+        ></textarea>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <button id="btn-process-batch" class="btn-submit" type="button">
+            Analizar Cola de Canciones
+          </button>
+          <button id="btn-clear-batch" class="btn-paste" type="button">
+            Limpiar Lista
+          </button>
+        </div>
+
+        <div id="batch-queue-container" class="batch-queue-list"></div>
+      </div>
+    </section>
+
+    <!-- Contenido: Pestaña Historial -->
+    <section id="tab-history" class="tab-content">
+      <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="font-family: var(--font-title); font-size: 26px;">
+          Canciones Descargadas Recientes
+        </h2>
+        <button id="btn-clear-history" class="btn-paste" type="button">
+          🗑️ Borrar Historial
+        </button>
+      </div>
+
+      <div id="history-container" class="history-grid">
+        <!-- Tarjetas dinámicas generadas desde JS -->
+      </div>
+      <div id="history-empty" style="display: none; text-align: center; padding: 60px 20px; color: var(--text-dim);">
+        <p style="font-size: 40px; margin-bottom: 12px;">🎵</p>
+        <p>Aún no has descargado ninguna canción. ¡Pega un enlace para empezar!</p>
+      </div>
+    </section>
+
+    <!-- ================================================ -->
+    <!-- Pestaña: Transcriptor de Audio a Texto           -->
+    <!-- ================================================ -->
+    <section id="tab-transcribe" class="tab-content">
+      <div class="hero-section" style="padding-bottom: 0;">
+        <div class="hero-pill"><span>🤖</span> Powered by OpenAI Whisper · 100% Local · Sin API Key</div>
+        <h1 class="hero-title" style="font-size: clamp(1.6rem,4vw,2.4rem);">Transcriptor de <span>Audio a Texto</span></h1>
+        <p class="hero-subtitle" style="max-width:600px;">Convierte cualquier audio en texto con IA. Puedes transcribir la canción actual de Suno o subir tu propio archivo. El modelo corre en tu navegador — privado y sin límites.</p>
+      </div>
+
+      <!-- Tarjeta principal del transcriptor -->
+      <div class="result-card transcriptor-card" style="display: block !important; margin-top: 28px;">
+
+        <!-- Fuente del Audio -->
+        <div style="margin-bottom:24px;">
+          <h3 class="downloads-section-title" style="margin-bottom:16px;"><span>🎧</span> Fuente del Audio</h3>
+
+          <!-- Opción A: Canción Suno actual -->
+          <button id="txr-btn-use-suno" style="
+            width:100%; margin-bottom:14px;
+            background:linear-gradient(135deg,rgba(108,92,231,0.2),rgba(0,206,201,0.12));
+            border:1.5px solid rgba(0,206,201,0.35); border-radius:var(--radius-md);
+            padding:16px 20px; display:flex; align-items:center; gap:14px;
+            cursor:pointer; text-align:left; transition:all .2s ease; color:var(--text-main);">
+            <span style="font-size:28px;">🎵</span>
+            <div>
+              <div style="font-family:var(--font-title);font-size:15px;font-weight:700;">Usar canción de Suno cargada</div>
+              <div id="txr-suno-name" style="font-size:12px;color:var(--text-muted);margin-top:2px;">Carga una canción primero en la pestaña Individual</div>
+            </div>
+          </button>
+
+          <!-- Opción B: Subir archivo -->
+          <div id="txr-drop-zone" style="
+            border:2px dashed rgba(0,206,201,0.4); border-radius:var(--radius-md);
+            background:var(--bg-elevated); padding:32px 20px;
+            text-align:center; cursor:pointer; transition:all .2s ease;
+            position:relative;">
+            <input type="file" id="txr-file-input" accept="audio/*,video/*"
+              style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2;">
+            <div style="pointer-events:none;">
+              <div style="font-size:40px;margin-bottom:10px;">📂</div>
+              <div style="font-family:var(--font-title);font-size:16px;font-weight:700;color:var(--text-main);margin-bottom:6px;">
+                Arrastra tu archivo aquí
+              </div>
+              <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+                o haz clic para seleccionar desde tu computadora
+              </div>
+              <span style="
+                display:inline-block; padding:10px 24px;
+                background:var(--grad-primary); border-radius:var(--radius-full);
+                font-size:14px; font-weight:600; color:#fff;">
+                📁 Seleccionar Archivo
+              </span>
+              <div style="margin-top:10px;font-size:11px;color:var(--text-dim);">
+                MP3 · WAV · M4A · OGG · FLAC · MP4 · WEBM
+              </div>
+            </div>
+          </div>
+
+          <!-- Fuente seleccionada -->
+          <div id="txr-selected-source" style="margin-top:14px; padding:12px 16px; background:var(--bg-elevated); border-radius:var(--radius-md); border:1px solid var(--neon-cyan); display:none; font-size:13px; color:var(--neon-cyan);">
+            <span style="opacity:.6;">Fuente seleccionada:</span> <strong id="txr-source-label"></strong>
+          </div>
+        </div>
+
+
+        <!-- Opciones de Idioma -->
+        <div style="margin-bottom:24px;">
+          <h3 class="downloads-section-title" style="margin-bottom:12px;"><span>🌐</span> Idioma del Audio</h3>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="txr-lang-btn active" data-lang="auto">🌍 Auto-detectar</button>
+            <button class="txr-lang-btn" data-lang="es">🇪🇸 Español</button>
+            <button class="txr-lang-btn" data-lang="en">🇺🇸 Inglés</button>
+            <button class="txr-lang-btn" data-lang="pt">🇧🇷 Portugués</button>
+            <button class="txr-lang-btn" data-lang="fr">🇫🇷 Francés</button>
+            <button class="txr-lang-btn" data-lang="de">🇩🇪 Alemán</button>
+            <button class="txr-lang-btn" data-lang="ja">🇯🇵 Japonés</button>
+          </div>
+        </div>
+
+        <!-- Botón Transcribir -->
+        <button id="txr-btn-start" class="btn-submit" style="width:100%; font-size:1rem; padding:16px; border-radius:var(--radius-md); letter-spacing:.5px;" disabled>
+          <span id="txr-btn-label">🎤 Transcribir Audio</span>
+        </button>
+
+        <!-- Barra de Progreso -->
+        <div id="txr-progress-wrap" style="margin-top:16px; display:none;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+            <span id="txr-progress-msg" style="color:var(--neon-cyan);">Iniciando...</span>
+            <span id="txr-progress-pct" style="color:var(--text-muted);">0%</span>
+          </div>
+          <div style="height:6px; background:var(--bg-elevated); border-radius:var(--radius-full); overflow:hidden;">
+            <div id="txr-progress-bar" style="height:100%; width:0%; background:var(--grad-primary); transition:width .3s ease; border-radius:var(--radius-full);"></div>
+          </div>
+        </div>
+
+        <!-- Resultado de la Transcripción -->
+        <div id="txr-result-section" style="margin-top:28px; display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h3 class="downloads-section-title" style="margin:0;"><span>📝</span> Transcripción</h3>
+            <div style="display:flex; gap:10px;">
+              <button id="txr-btn-copy" class="btn-paste" style="padding:8px 16px; font-size:13px;">📋 Copiar</button>
+              <button id="txr-btn-download-txt" class="btn-submit" style="padding:8px 16px; font-size:13px;">💾 .TXT</button>
+              <button id="txr-btn-toggle-ts" class="btn-paste" style="padding:8px 16px; font-size:13px;">🕐 Timestamps</button>
+            </div>
+          </div>
+
+          <!-- Vista limpia (solo texto) -->
+          <div id="txr-plain-view" style="background:var(--bg-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:20px; font-size:15px; line-height:1.8; color:var(--text-main); white-space:pre-wrap; max-height:400px; overflow-y:auto;"></div>
+
+          <!-- Vista con timestamps -->
+          <div id="txr-ts-view" style="background:var(--bg-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:20px; max-height:400px; overflow-y:auto; display:none;"></div>
+
+          <!-- Estadísticas de la transcripción -->
+          <div id="txr-stats" style="margin-top:12px; display:flex; gap:20px; font-size:12px; color:var(--text-muted);"></div>
+        </div>
+      </div>
+
+      <!-- Info / Nota sobre el modelo -->
+      <div style="margin-top:24px; padding:16px 20px; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); font-size:13px; color:var(--text-muted); display:flex; gap:12px; align-items:flex-start;">
+        <span style="font-size:20px;">💡</span>
+        <div>
+          <strong style="color:var(--text-main);">Whisper Tiny de OpenAI</strong> — La primera vez descarga ~40 MB del modelo (se guarda en caché en tu navegador). Las siguientes veces es instantáneo. Funciona completamente offline y sin API Key. Para mayor precisión, los audios en inglés funcionan mejor.
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================ -->
+    <!-- Pestaña: Cortador de Audio & Generador de Muestras -->
+    <!-- ================================================ -->
+    <section id="tab-trimmer" class="tab-content">
+      <div class="hero-section" style="padding-bottom: 0;">
+        <div class="hero-pill"><span>✂️</span> Audio Trimmer & Demo Maker · Protección Comercial</div>
+        <h1 class="hero-title" style="font-size: clamp(1.6rem,4vw,2.4rem);">Cortador de Audio & <span>Generador de Muestras</span></h1>
+        <p class="hero-subtitle" style="max-width:640px;">
+          Recorta el estribillo o fragmento perfecto (15s, 30s o personalizado) para enviar a clientes o publicar en redes. Incluye carátula con sello de "MUESTRA" y marcas de agua de protección.
+        </p>
+      </div>
+
+      <!-- Tarjeta principal del cortador -->
+      <div class="result-card trimmer-card" style="display: block !important; margin-top: 28px;">
+
+        <!-- 1. Fuente del Audio -->
+        <div style="margin-bottom: 24px;">
+          <h3 class="downloads-section-title" style="margin-bottom: 14px;"><span>🎧</span> 1. Audio a Recortar</h3>
+
+          <!-- Opción A: Pegar enlace de Suno directamente -->
+          <div style="margin-bottom: 14px; background: var(--bg-elevated); border: 1.5px solid rgba(0,206,201,0.4); border-radius: var(--radius-md); padding: 16px; box-shadow: 0 4px 20px rgba(0,206,201,0.08);">
+            <label for="trimmer-suno-url" style="display:flex; align-items:center; gap:8px; font-family:var(--font-title); font-size:14px; font-weight:700; color:var(--neon-cyan); margin-bottom:10px;">
+              <span>🔗</span> Pegar enlace o ID de Suno directamente:
+            </label>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <div style="flex:1; min-width:240px; position:relative;">
+                <input type="text" id="trimmer-suno-url" placeholder="Pega aquí el enlace de Suno (ej: https://suno.com/song/... o UUID)"
+                  style="width:100%; padding:12px 85px 12px 14px; background:rgba(10,14,26,0.8); border:1px solid rgba(0,206,201,0.3); border-radius:var(--radius-sm); color:var(--text-main); font-size:13px; outline:none; transition:border-color .2s ease;">
+                <button type="button" id="trimmer-btn-paste-clipboard" title="Pegar del portapapeles"
+                  style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:4px; padding:5px 10px; cursor:pointer; color:var(--text-main); font-size:12px; font-weight:600; display:flex; align-items:center; gap:4px; transition:all .2s ease;">
+                  📋 Pegar
+                </button>
+              </div>
+              <button type="button" id="trimmer-btn-fetch-url" class="btn btn-primary" style="padding:11px 22px; font-weight:700; white-space:nowrap; display:flex; align-items:center; gap:8px; font-size:13px;">
+                <span>⚡</span> Cargar Canción
+              </button>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:8px;">
+              💡 <strong>Instantáneo:</strong> Al pegar un enlace con <kbd style="background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:#fff;">Ctrl+V</kbd> se detecta y carga de inmediato sin hacer clic.
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:10px; margin: 14px 0 12px 0; color:var(--text-muted); font-size:12px;">
+            <div style="flex:1; height:1px; background:var(--border-subtle);"></div>
+            <span style="letter-spacing:0.5px; text-transform:uppercase; font-size:11px; opacity:0.8;">o también puedes</span>
+            <div style="flex:1; height:1px; background:var(--border-subtle);"></div>
+          </div>
+
+          <button id="trimmer-btn-use-suno" style="
+            width:100%; margin-bottom:14px;
+            background:linear-gradient(135deg,rgba(108,92,231,0.2),rgba(0,206,201,0.12));
+            border:1.5px solid rgba(0,206,201,0.35); border-radius:var(--radius-md);
+            padding:16px 20px; display:flex; align-items:center; gap:14px;
+            cursor:pointer; text-align:left; transition:all .2s ease; color:var(--text-main);">
+            <span style="font-size:28px;">🎵</span>
+            <div>
+              <div style="font-family:var(--font-title);font-size:15px;font-weight:700;">Usar canción de Suno ya analizada</div>
+              <div id="trimmer-suno-name" style="font-size:12px;color:var(--text-muted);margin-top:2px;">Carga una canción primero en la pestaña Individual</div>
+            </div>
+          </button>
+
+          <!-- O subir desde la PC -->
+          <div id="trimmer-drop-zone" style="
+            border:2px dashed rgba(108,92,231,0.4); border-radius:var(--radius-md);
+            background:var(--bg-elevated); padding:24px 20px;
+            text-align:center; cursor:pointer; transition:all .2s ease; position:relative;">
+            <input type="file" id="trimmer-file-input" accept="audio/*,video/*"
+              style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2;">
+            <div style="pointer-events:none;">
+              <div style="font-size:32px;margin-bottom:6px;">📁</div>
+              <div style="font-family:var(--font-title);font-size:15px;font-weight:700;color:var(--text-main);margin-bottom:4px;">
+                O sube cualquier audio de tu computadora
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);">
+                MP3 · WAV · M4A · OGG · FLAC
+              </div>
+            </div>
+          </div>
+
+          <div id="trimmer-selected-source" style="margin-top:12px; padding:12px 16px; background:var(--bg-elevated); border-radius:var(--radius-md); border:1px solid var(--neon-purple); display:none; font-size:13px; color:var(--neon-purple);">
+            <span style="opacity:.7;">Audio seleccionado:</span> <strong id="trimmer-source-label"></strong>
+          </div>
+        </div>
+
+        <!-- 2. Rango de Recorte & Presets -->
+        <div style="margin-bottom: 28px;">
+          <h3 class="downloads-section-title" style="margin-bottom: 14px;"><span>⏱️</span> 2. Seleccionar Fragmento</h3>
+
+          <!-- Presets rápidos -->
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
+            <button class="trimmer-preset-btn" data-duration="15">⚡ 15s (Shorts/TikTok)</button>
+            <button class="trimmer-preset-btn active" data-duration="30">🎵 30s (Muestra Estribillo)</button>
+            <button class="trimmer-preset-btn" data-duration="60">⏱️ 60s (Demo)</button>
+            <button class="trimmer-preset-btn" data-duration="all">♾️ Todo el audio</button>
+          </div>
+
+          <!-- Cuadros de Inicio, Fin y Duración -->
+          <div style="display:flex; gap:16px; margin-bottom:20px;">
+            <div class="trimmer-time-box">
+              <span style="font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px;">Inicio</span>
+              <div id="trimmer-start-val" class="trimmer-time-val">0:00</div>
+            </div>
+            <div class="trimmer-time-box">
+              <span style="font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px;">Fin</span>
+              <div id="trimmer-end-val" class="trimmer-time-val" style="color:var(--neon-purple);">0:30</div>
+            </div>
+            <div class="trimmer-time-box">
+              <span style="font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px;">Duración</span>
+              <div id="trimmer-duration-val" class="trimmer-time-val" style="color:#ffffff;">30s</div>
+            </div>
+          </div>
+
+          <!-- Sliders de rango -->
+          <div style="background:var(--bg-elevated); padding:20px; border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+            <div style="margin-bottom:14px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:6px;">
+                <span>Punto de Inicio:</span>
+                <span id="trimmer-start-label" style="color:var(--neon-cyan); font-weight:600;">0:00</span>
+              </div>
+              <input type="range" id="trimmer-start-slider" class="scrub-bar" min="0" max="100" step="0.5" value="0">
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:6px;">
+                <span>Punto de Fin:</span>
+                <span id="trimmer-end-label" style="color:var(--neon-purple); font-weight:600;">0:30</span>
+              </div>
+              <input type="range" id="trimmer-end-slider" class="scrub-bar" min="0" max="100" step="0.5" value="30">
+            </div>
+          </div>
+
+          <!-- Botón de Preescucha -->
+          <div style="margin-top:16px; display:flex; gap:12px; align-items:center;">
+            <button id="trimmer-btn-preview" class="btn-paste" style="padding:12px 24px; font-size:14px; font-weight:600; border-color:var(--neon-cyan); color:var(--neon-cyan);" disabled>
+              ▶️ Escuchar Muestra
+            </button>
+            <span id="trimmer-preview-status" style="font-size:13px; color:var(--text-muted);">Carga un audio para preescuchar</span>
+          </div>
+        </div>
+
+        <!-- 3. Opciones de Protección para el Cliente -->
+        <div style="margin-bottom: 28px; border-top: 1px solid var(--border-subtle); padding-top: 24px;">
+          <h3 class="downloads-section-title" style="margin-bottom: 14px;"><span>🛡️</span> 3. Protección y Carátula de Muestra</h3>
+
+          <!-- Checkbox Marca Sonora -->
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; margin-bottom:20px; background:var(--bg-elevated); padding:14px 18px; border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+            <input type="checkbox" id="trimmer-chk-watermark-sound" style="width:18px; height:18px; cursor:pointer; accent-color:var(--neon-cyan);">
+            <div>
+              <div style="font-weight:600; font-size:14px; color:var(--text-main);">Añadir marca de agua sonora cada 10 segundos</div>
+              <div style="font-size:12px; color:var(--text-muted);">Inserta un tono sutil para evitar que el cliente use el audio comercialmente antes de pagar</div>
+            </div>
+          </label>
+
+          <!-- Carátula con Sello de Muestra -->
+          <div style="display:grid; grid-template-columns: 240px 1fr; gap:20px; background:var(--bg-elevated); padding:20px; border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+            <!-- Canvas / Preview -->
+            <div style="text-align:center;">
+              <canvas id="trimmer-cover-canvas" width="240" height="240" style="width:100%; max-width:240px; border-radius:var(--radius-md); border:1px solid rgba(0,206,201,0.3); box-shadow:0 8px 24px rgba(0,0,0,0.5);"></canvas>
+            </div>
+
+            <!-- Controles de la Portada -->
+            <div>
+              <h4 style="font-family:var(--font-title); font-size:15px; margin-bottom:10px; color:var(--text-main);">Sello Visual para la Carátula</h4>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">
+                Estampa un sello llamativo sobre la portada para enviar la imagen al cliente.
+              </p>
+
+              <div style="margin-bottom:14px;">
+                <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Texto del Sello:</label>
+                <input type="text" id="trimmer-watermark-text" class="search-input" value="MUESTRA DEMO" style="font-size:14px; padding:10px 14px; height:auto;">
+              </div>
+
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <label class="btn-paste" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:13px; padding:8px 16px;">
+                  🖼️ Subir mi propia imagen de MUESTRA
+                  <input type="file" id="trimmer-custom-watermark-input" accept="image/*" style="display:none;">
+                </label>
+                <button id="trimmer-btn-reset-watermark" class="btn-paste" style="font-size:13px; padding:8px 16px; display:none;">
+                  🔄 Usar sello predeterminado
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Botones de Descarga -->
+        <div>
+          <h3 class="downloads-section-title" style="margin-bottom: 14px;"><span>💾</span> 4. Exportar Archivos para el Cliente</h3>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+            <button id="trimmer-btn-download-mp3" class="btn-submit" style="padding:16px; border-radius:var(--radius-md); font-size:14px;" disabled>
+              💾 Descargar Muestra MP3 (320k)
+            </button>
+            <button id="trimmer-btn-download-wav" class="btn-submit" style="padding:16px; border-radius:var(--radius-md); font-size:14px; background:linear-gradient(135deg, #00cec9, #0984e3);" disabled>
+              💾 Descargar Muestra WAV HQ
+            </button>
+            <button id="trimmer-btn-download-cover" class="btn-paste" style="padding:16px; border-radius:var(--radius-md); font-size:14px; justify-content:center;">
+              🖼️ Descargar Carátula MUESTRA
+            </button>
+          </div>
+
+          <!-- Barra de progreso -->
+          <div id="trimmer-progress-wrap" style="margin-top:16px; display:none;">
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+              <span id="trimmer-progress-msg" style="color:var(--neon-cyan);">Procesando muestra...</span>
+              <span id="trimmer-progress-pct" style="color:var(--text-muted);">0%</span>
+            </div>
+            <div style="height:6px; background:var(--bg-elevated); border-radius:var(--radius-full); overflow:hidden;">
+              <div id="trimmer-progress-bar" style="height:100%; width:0%; background:var(--grad-primary); transition:width .3s ease; border-radius:var(--radius-full);"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Modal de Letras -->
+    <div id="lyrics-modal" class="modal-backdrop">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 id="lyrics-modal-title" class="modal-title">Letra de la Canción</h3>
+          <button id="btn-close-lyrics" class="btn-close-modal" type="button">&times;</button>
+        </div>
+        <div id="lyrics-modal-body" class="modal-body">
+          Cargando letra...
+        </div>
+        <div class="modal-footer">
+          <button id="btn-copy-lyrics" class="btn-paste" type="button">
+            📋 Copiar Letra
+          </button>
+          <button id="btn-download-lyrics" class="btn-submit" type="button">
+            💾 Descargar como .TXT
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenedor de Notificaciones Toast -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <!-- Scripts con versión para actualización inmediata -->
+  <script src="js/suno-service.js?v=10"></script>
+  <script src="js/audio-converter.js?v=10"></script>
+  <script src="js/visualizer.js?v=10"></script>
+  <script src="js/transcriber.js?v=10"></script>
+  <script src="js/audio-trimmer.js?v=10"></script>
+  <script src="js/app.js?v=10"></script>
+</body>
+</html>
