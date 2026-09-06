@@ -1089,3 +1089,314 @@ body {
   color: var(--neon-cyan);
   margin-top: 4px;
 }
+
+/* ============================================================ */
+/* PAYWALL / MODAL DE SUSCRIPCIÓN ($10 USD / COP)               */
+/* ============================================================ */
+.paywall-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(5, 4, 10, 0.88);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  animation: fadeIn 0.3s ease;
+}
+
+.paywall-card {
+  background: linear-gradient(145deg, rgba(26, 22, 50, 0.95), rgba(16, 13, 33, 0.98));
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: 28px;
+  max-width: 540px;
+  width: 100%;
+  padding: 36px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 50px rgba(108, 92, 231, 0.25);
+  text-align: center;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.paywall-badge-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, rgba(253, 66, 156, 0.2), rgba(108, 92, 231, 0.3));
+  border: 1px solid rgba(253, 66, 156, 0.4);
+  color: #fd79a8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.paywall-title {
+  font-family: var(--font-title);
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 10px 0;
+  color: #fff;
+}
+
+.paywall-title span {
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.paywall-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 auto 24px auto;
+  max-width: 440px;
+}
+
+/* Tarjeta de Precios con Conversión */
+.paywall-pricing-box {
+  background: rgba(108, 92, 231, 0.08);
+  border: 1px solid rgba(108, 92, 231, 0.3);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.paywall-pricing-box::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(108, 92, 231, 0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.pricing-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--neon-cyan);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.pricing-main-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pricing-usd {
+  font-family: var(--font-title);
+  font-size: 42px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -1px;
+}
+
+.pricing-period {
+  font-size: 16px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.pricing-cop-row {
+  margin-top: 4px;
+}
+
+.pricing-cop {
+  font-family: var(--font-title);
+  font-size: 20px;
+  font-weight: 700;
+  color: #2ed573;
+  text-shadow: 0 0 12px rgba(46, 213, 115, 0.3);
+}
+
+.pricing-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* Lista de Beneficios */
+.paywall-features {
+  text-align: left;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: #e4e7eb;
+  line-height: 1.4;
+}
+
+.feat-check {
+  color: #2ed573;
+  font-weight: 800;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Formulario de Activación */
+.paywall-form {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.paywall-input-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.paywall-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.paywall-input-row input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  color: #fff;
+  font-size: 14px;
+  font-family: monospace;
+  letter-spacing: 0.5px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.paywall-input-row input:focus {
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 12px rgba(108, 92, 231, 0.3);
+}
+
+.paywall-input-row button {
+  white-space: nowrap;
+  padding: 12px 20px;
+  font-size: 14px;
+}
+
+.paywall-msg {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.paywall-msg-error {
+  background: rgba(255, 71, 87, 0.15);
+  border: 1px solid rgba(255, 71, 87, 0.35);
+  color: #ff4757;
+}
+
+.paywall-msg-success {
+  background: rgba(46, 213, 115, 0.15);
+  border: 1px solid rgba(46, 213, 115, 0.35);
+  color: #2ed573;
+}
+
+/* Botón WhatsApp de Solicitud */
+.paywall-footer-actions {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 20px;
+}
+
+.btn-whatsapp-pay {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  box-shadow: 0 4px 18px rgba(37, 211, 102, 0.3);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn-whatsapp-pay:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(37, 211, 102, 0.45);
+}
+
+.paywall-guarantee {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+
+/* Badge de Suscripción en Header */
+.user-license-badge {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(108, 92, 231, 0.12);
+  border: 1px solid rgba(108, 92, 231, 0.35);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  color: #fff;
+}
+
+.user-license-badge:hover {
+  background: rgba(108, 92, 231, 0.25);
+  border-color: var(--neon-purple);
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(108, 92, 231, 0.3);
+}
+
+.license-badge-user {
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.license-badge-days {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid;
+  letter-spacing: 0.3px;
+}
+
