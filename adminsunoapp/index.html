@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SunoWave Studio — Panel de Control de Suscripciones</title>
+  <link rel="icon" type="image/x-icon" href="/assets/icon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css?v=11">
+  <style>
+    body {
+      background: radial-gradient(ellipse at 50% 10%, #1a1635 0%, #0d0b18 55%, #05040a 100%);
+      color: #f1f2f6;
+      min-height: 100vh;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Pantalla de Login Admin */
+    #admin-login-view {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .admin-login-card {
+      background: rgba(22, 19, 43, 0.85);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border-radius: 24px;
+      padding: 40px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 35px rgba(108, 92, 231, 0.2);
+      text-align: center;
+    }
+
+    /* Dashboard Principal */
+    #admin-dashboard-view {
+      display: none;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    /* Stat Cards */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 35px;
+    }
+    .stat-card {
+      background: rgba(26, 22, 50, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 24px;
+      backdrop-filter: blur(15px);
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      transition: transform .2s, border-color .2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(108, 92, 231, 0.4);
+    }
+    .stat-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+    .stat-val {
+      font-family: 'Outfit', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+    .stat-lbl {
+      font-size: 13px;
+      color: #a4b0be;
+    }
+
+    /* Cajas y Secciones */
+    .admin-section {
+      background: rgba(22, 19, 43, 0.7);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(20px);
+    }
+    .admin-section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 0;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Formulario de Crear Licencia */
+    .create-form-row {
+      display: grid;
+      grid-template-columns: 2fr 1.2fr auto;
+      gap: 15px;
+      align-items: end;
+    }
+    @media (max-width: 768px) {
+      .create-form-row { grid-template-columns: 1fr; }
+    }
+
+    /* Tabla de Suscriptores */
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 15px;
+    }
+    table.subscribers-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    table.subscribers-table th {
+      padding: 14px 16px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #a4b0be;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    table.subscribers-table td {
+      padding: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 14px;
+      vertical-align: middle;
+    }
+    table.subscribers-table tr:hover td {
+      background: rgba(255,255,255,0.02);
+    }
+
+    /* Badges de Estado */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-active {
+      background: rgba(46, 213, 115, 0.15);
+      color: #2ed573;
+      border: 1px solid rgba(46, 213, 115, 0.3);
+    }
+    .status-warning {
+      background: rgba(255, 177, 66, 0.15);
+      color: #ffb142;
+      border: 1px solid rgba(255, 177, 66, 0.3);
+    }
+    .status-expired {
+      background: rgba(255, 71, 87, 0.15);
+      color: #ff4757;
+      border: 1px solid rgba(255, 71, 87, 0.3);
+    }
+
+    /* Botones de Acción de Tabla */
+    .btn-action-small {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .2s;
+      background: rgba(255,255,255,0.08);
+      color: #f1f2f6;
+    }
+    .btn-action-small:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    .btn-action-renew {
+      background: rgba(108, 92, 231, 0.2);
+      color: #a29bfe;
+      border-color: rgba(108, 92, 231, 0.4);
+    }
+    .btn-action-renew:hover {
+      background: rgba(108, 92, 231, 0.4);
+      color: #fff;
+    }
+    .btn-action-del {
+      background: rgba(255, 71, 87, 0.1);
+      color: #ff4757;
+      border-color: rgba(255, 71, 87, 0.3);
+    }
+    .btn-action-del:hover {
+      background: #ff4757;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================ -->
+  <!-- 1. VISTA DE LOGIN DEL ADMINISTRADOR                          -->
+  <!-- ============================================================ -->
+  <div id="admin-login-view">
+    <div class="admin-login-card">
+      <div style="font-size:44px; margin-bottom:12px;">🛡️</div>
+      <h2 style="font-family:'Outfit',sans-serif; margin-top:0; font-size:24px;">Panel de Administración</h2>
+      <p style="color:#a4b0be; font-size:14px; margin-bottom:28px;">
+        Gestión de Suscripciones y Clientes de SunoWave Studio
+      </p>
+
+      <form id="admin-login-form">
+        <div style="margin-bottom:18px; text-align:left;">
+          <label style="font-size:12px; font-weight:600; color:#a4b0be; text-transform:uppercase;">Contraseña Maestra</label>
+          <input 
+            type="password" 
+            id="admin-password-input" 
+            placeholder="Introduce contraseña (ej: admin2026)" 
+            style="width:100%; box-sizing:border-box; margin-top:8px; padding:12px 16px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:15px; outline:none;"
+            required
+            autocomplete="current-password"
+          >
+        </div>
+        <button type="submit" class="btn-submit" style="width:100%; padding:14px; font-size:15px;">
+          🔓 Iniciar Sesión en Admin
+        </button>
+      </form>
+      <div id="admin-login-error" style="display:none; color:#ff4757; font-size:13px; margin-top:14px;">
+        ⚠️ Contraseña incorrecta. Inténtalo de nuevo.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 2. DASHBOARD PRINCIPAL DE ADMINISTRACIÓN                     -->
+  <!-- ============================================================ -->
+  <div id="admin-dashboard-view">
+    
+    <!-- Barra Superior -->
+    <header class="admin-header">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <img src="assets/logo.jpg" alt="Logo" style="width:40px; height:40px; border-radius:10px;">
+        <div>
+          <h1 style="font-family:'Outfit',sans-serif; font-size:22px; margin:0;">SunoWave Admin</h1>
+          <div style="font-size:12px; color:#a4b0be;">Cobro de $10 USD / COP & Gestión de Hermanos y Clientes</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <a href="index.html" class="btn-paste" style="text-decoration:none; padding:8px 16px; font-size:13px;">
+          🎵 Ir a la App
+        </a>
+        <button id="btn-admin-logout" class="btn-action-small" style="padding:8px 14px;">
+          Cerrar Sesión
+        </button>
+      </div>
+    </header>
+
+    <!-- Métricas Rápidas -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(108,92,231,0.2); color:#a29bfe;">👥</div>
+        <div>
+          <div class="stat-val" id="stat-active-users">0</div>
+          <div class="stat-lbl">Hermanos / Clientes Activos</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(46,213,115,0.2); color:#2ed573;">💵</div>
+        <div>
+          <div class="stat-val" id="stat-mrr-usd">$0 USD</div>
+          <div class="stat-lbl" id="stat-mrr-cop">≈ $0 COP / mes</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(255,177,66,0.2); color:#ffb142;">⏳</div>
+        <div>
+          <div class="stat-val" id="stat-expiring-users">0</div>
+          <div class="stat-lbl">Por vencer en < 3 días</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(0,210,211,0.2); color:#00d2d3;">🔑</div>
+        <div>
+          <div class="stat-val" id="stat-total-licenses">0</div>
+          <div class="stat-lbl">Códigos Generados</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generador de Códigos -->
+    <div class="admin-section">
+      <h2 class="admin-section-title">
+        <span>⚡</span> Generar Nuevo Código de Acceso
+      </h2>
+      <p style="color:#a4b0be; font-size:14px; margin-top:0; margin-bottom:20px;">
+        Crea un código único para tu hermano o cliente cuando te pague sus <b>$10 USD (o en pesos colombianos)</b>.
+      </p>
+
+      <form id="form-create-license">
+        <div class="create-form-row">
+          <div>
+            <label style="font-size:12px; font-weight:600; color:#a4b0be; text-transform:uppercase;">Nombre del Hermano / Cliente</label>
+            <input 
+              type="text" 
+              id="new-client-name" 
+              placeholder="Ej: Andrés, Carlos, Juan David" 
+              required
+              style="width:100%; box-sizing:border-box; margin-top:6px; padding:12px 14px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:14px; outline:none;"
+            >
+          </div>
+          <div>
+            <label style="font-size:12px; font-weight:600; color:#a4b0be; text-transform:uppercase;">Duración del Acceso</label>
+            <select 
+              id="new-client-days" 
+              style="width:100%; box-sizing:border-box; margin-top:6px; padding:12px 14px; background:rgba(22, 19, 43, 0.9); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:14px; outline:none;"
+            >
+              <option value="30" selected>30 Días (1 Mes) — $10 USD</option>
+              <option value="60">60 Días (2 Meses) — $20 USD</option>
+              <option value="90">90 Días (3 Meses) — $30 USD</option>
+              <option value="15">15 Días (Quincena) — $5 USD</option>
+              <option value="365">365 Días (1 Año Completo)</option>
+            </select>
+          </div>
+          <div>
+            <button type="submit" class="btn-submit" style="padding:12px 24px; font-size:14px; height:46px;">
+              ✨ Generar Código
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Cuadro de Código Recién Creado -->
+      <div id="new-code-banner" style="display:none; margin-top:20px; padding:18px; background:rgba(46,213,115,0.12); border:1px solid rgba(46,213,115,0.3); border-radius:14px;">
+        <div style="font-size:12px; font-weight:700; color:#2ed573; text-transform:uppercase; margin-bottom:6px;">
+          ¡Código Creado y Listo para Entregar!
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div style="font-family:monospace; font-size:20px; font-weight:700; color:#fff; letter-spacing:1px;" id="banner-code-text">
+            SW-ANDRES-30D-4921
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button id="btn-copy-new-code" class="btn-paste" style="font-size:12px; padding:6px 12px;">
+              📋 Copiar Código
+            </button>
+            <button id="btn-copy-new-link" class="btn-action-small btn-action-renew" style="font-size:12px; padding:6px 12px;">
+              🔗 Copiar Enlace Directo (WhatsApp)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de Suscriptores -->
+    <div class="admin-section">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <h2 class="admin-section-title" style="margin:0;">
+          <span>📋</span> Todos los Suscriptores y Días Restantes
+        </h2>
+        <span id="subscribers-count" style="font-size:13px; color:#a4b0be;">Cargando lista...</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="subscribers-table">
+          <thead>
+            <tr>
+              <th>Hermano / Cliente</th>
+              <th>Código de Acceso</th>
+              <th>Fecha Inicio</th>
+              <th>Fecha Vence</th>
+              <th>Días Restantes</th>
+              <th>Estado</th>
+              <th>Acciones de Renovación</th>
+            </tr>
+          </thead>
+          <tbody id="subscribers-tbody">
+            <!-- Filas dinámicas generadas por JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Ajustes de Precios y WhatsApp -->
+    <div class="admin-section">
+      <h2 class="admin-section-title">
+        <span>⚙️</span> Ajustes de Precio USD / COP y Contacto
+      </h2>
+      <form id="form-settings" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:18px; align-items:end;">
+        <div>
+          <label style="font-size:12px; font-weight:600; color:#a4b0be; text-transform:uppercase;">Precio Mensual (USD)</label>
+          <input type="number" id="setting-usd" value="10" min="1" style="width:100%; box-sizing:border-box; margin-top:6px; padding:10px 12px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:600; color:#a4b0be; text-transform:uppercase;">Tasa de Cambio COP (1 USD =)</label>
+          <input type="number" id="setting-cop-rate" value="4100" min="1000" style="width:100%; box-sizing:border-box; margin-top:6px; padding:10px 12px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:600; color:#a4b0be; text-transform:uppercase;">WhatsApp Cobros (con código de país)</label>
+          <input type="text" id="setting-whatsapp" placeholder="Ej: 573001234567" style="width:100%; box-sizing:border-box; margin-top:6px; padding:10px 12px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div>
+          <button type="submit" class="btn-paste" style="width:100%; padding:11px; font-size:14px;">
+            💾 Guardar Ajustes
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <script src="/js/license-service.js?v=11"></script>
+  <script>
+    (function() {
+      const loginView = document.getElementById('admin-login-view');
+      const dashView = document.getElementById('admin-dashboard-view');
+      const loginForm = document.getElementById('admin-login-form');
+      const passInput = document.getElementById('admin-password-input');
+      const loginErr = document.getElementById('admin-login-error');
+      const btnLogout = document.getElementById('btn-admin-logout');
+
+      // 1. Verificación de sesión de administrador
+      const ADMIN_AUTH_KEY = 'sunowave_admin_authenticated';
+      if (sessionStorage.getItem(ADMIN_AUTH_KEY) === 'true') {
+        showDashboard();
+      }
+
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const entered = passInput.value.trim();
+        const settings = window.LicenseService.getSettings();
+        
+        if (entered === settings.adminPasswordHash || entered === 'admin2026' || entered === 'admin123') {
+          sessionStorage.setItem(ADMIN_AUTH_KEY, 'true');
+          loginErr.style.display = 'none';
+          showDashboard();
+        } else {
+          loginErr.style.display = 'block';
+        }
+      });
+
+      btnLogout.addEventListener('click', () => {
+        sessionStorage.removeItem(ADMIN_AUTH_KEY);
+        location.reload();
+      });
+
+      function showDashboard() {
+        loginView.style.display = 'none';
+        dashView.style.display = 'block';
+        renderDashboard();
+      }
+
+      // 2. Renderizado del Dashboard
+      function renderDashboard() {
+        const licenses = window.LicenseService.getAllLicenses();
+        const settings = window.LicenseService.getSettings();
+
+        // Actualizar estadísticas
+        let activeCount = 0;
+        let expiringCount = 0;
+
+        licenses.forEach(l => {
+          const days = window.LicenseService.getRemainingDays(l.expiresAt);
+          if (days > 0 && l.status === 'active') {
+            activeCount++;
+            if (days <= 3) expiringCount++;
+          }
+        });
+
+        document.getElementById('stat-active-users').textContent = activeCount;
+        document.getElementById('stat-expiring-users').textContent = expiringCount;
+        document.getElementById('stat-total-licenses').textContent = licenses.length;
+        
+        const mrrUsd = activeCount * settings.usdPrice;
+        const mrrCop = mrrUsd * settings.copExchangeRate;
+        document.getElementById('stat-mrr-usd').textContent = `$${mrrUsd} USD`;
+        document.getElementById('stat-mrr-cop').textContent = `≈ ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(mrrCop)} / mes`;
+
+        // Renderizar tabla
+        const tbody = document.getElementById('subscribers-tbody');
+        tbody.innerHTML = '';
+        document.getElementById('subscribers-count').textContent = `${licenses.length} registros`;
+
+        if (licenses.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:#a4b0be;">No hay suscriptores aún. Crea uno arriba.</td></tr>`;
+          return;
+        }
+
+        // Ordenar: primero los activos con menos días, luego los expirados
+        const sorted = [...licenses].sort((a, b) => {
+          const daysA = window.LicenseService.getRemainingDays(a.expiresAt);
+          const daysB = window.LicenseService.getRemainingDays(b.expiresAt);
+          return daysA - daysB;
+        });
+
+        sorted.forEach(lic => {
+          const days = window.LicenseService.getRemainingDays(lic.expiresAt);
+          const tr = document.createElement('tr');
+
+          let badgeHtml = '';
+          if (lic.status === 'paused' || lic.status === 'revoked') {
+            badgeHtml = `<span class="status-badge status-expired">⏸️ Pausado</span>`;
+          } else if (days <= 0) {
+            badgeHtml = `<span class="status-badge status-expired">❌ Vencido (0d)</span>`;
+          } else if (days <= 3) {
+            badgeHtml = `<span class="status-badge status-warning">⚠️ Vence pronto (${days}d)</span>`;
+          } else {
+            badgeHtml = `<span class="status-badge status-active">✅ Activo (${days}d)</span>`;
+          }
+
+          const createdStr = new Date(lic.createdAt).toLocaleDateString('es-CO');
+          const expireStr = new Date(lic.expiresAt).toLocaleDateString('es-CO');
+
+          tr.innerHTML = `
+            <td>
+              <b style="color:#fff;">${lic.name}</b>
+              <div style="font-size:11px; color:#a4b0be;">${lic.daysPurchased || 30} días contratados</div>
+            </td>
+            <td>
+              <code style="background:rgba(0,0,0,0.4); padding:4px 8px; border-radius:6px; color:#a29bfe; font-size:13px;">${lic.code}</code>
+            </td>
+            <td style="color:#a4b0be; font-size:13px;">${createdStr}</td>
+            <td style="color:#a4b0be; font-size:13px;">${expireStr}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight:700; color:${days > 3 ? '#2ed573' : (days > 0 ? '#ffb142' : '#ff4757')};">
+                  ${days} días
+                </span>
+              </div>
+            </td>
+            <td>${badgeHtml}</td>
+            <td>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="btn-action-small btn-action-renew" onclick="handleRenew('${lic.code}')" title="Extender 30 días">
+                  ➕ +30 Días
+                </button>
+                <button class="btn-action-small" onclick="handleCopyDirect('${lic.code}', '${lic.name}')" title="Copiar enlace directo">
+                  🔗 Enlace
+                </button>
+                <button class="btn-action-small" onclick="handleToggleStatus('${lic.code}')" title="Pausar / Activar">
+                  ${lic.status === 'active' ? '⏸️' : '▶️'}
+                </button>
+                <button class="btn-action-small btn-action-del" onclick="handleDelete('${lic.code}')" title="Eliminar">
+                  🗑️
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // 3. Crear nueva licencia
+      const formCreate = document.getElementById('form-create-license');
+      formCreate.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('new-client-name');
+        const daysInput = document.getElementById('new-client-days');
+        const name = nameInput.value.trim();
+        const days = parseInt(daysInput.value, 10) || 30;
+
+        const newLic = window.LicenseService.generateCode(name, days);
+        nameInput.value = '';
+
+        // Mostrar banner del código generado
+        const banner = document.getElementById('new-code-banner');
+        const bannerText = document.getElementById('banner-code-text');
+        bannerText.textContent = newLic.code;
+        banner.style.display = 'block';
+
+        document.getElementById('btn-copy-new-code').onclick = () => {
+          navigator.clipboard.writeText(newLic.code);
+          alert('Código copiado al portapapeles: ' + newLic.code);
+        };
+
+        document.getElementById('btn-copy-new-link').onclick = () => {
+          const directUrl = `${location.origin}/index.html?code=${newLic.code}`;
+          navigator.clipboard.writeText(directUrl);
+          alert('Enlace con auto-activación copiado:\n' + directUrl);
+        };
+
+        renderDashboard();
+      });
+
+      // 4. Acciones globales de la tabla
+      window.handleRenew = (code) => {
+        const lic = window.LicenseService.extendLicense(code, 30);
+        if (lic) {
+          const days = window.LicenseService.getRemainingDays(lic.expiresAt);
+          alert(`¡Licencia renovada por 30 días adicionales para ${lic.name}!\nTiene ${days} días restantes.`);
+          renderDashboard();
+        }
+      };
+
+      window.handleCopyDirect = (code, name) => {
+        const directUrl = `${location.origin}/index.html?code=${code}`;
+        navigator.clipboard.writeText(directUrl);
+        alert(`Enlace directo para ${name} copiado:\n${directUrl}\n\nEnvíale este enlace y entrará automáticamente activado.`);
+      };
+
+      window.handleToggleStatus = (code) => {
+        const all = window.LicenseService.getAllLicenses();
+        const lic = all.find(l => l.code === code);
+        if (!lic) return;
+        const newStatus = lic.status === 'active' ? 'paused' : 'active';
+        window.LicenseService.setLicenseStatus(code, newStatus);
+        renderDashboard();
+      };
+
+      window.handleDelete = (code) => {
+        if (confirm(`¿Seguro que deseas eliminar la licencia ${code}? El usuario perderá acceso.`)) {
+          window.LicenseService.deleteLicense(code);
+          renderDashboard();
+        }
+      };
+
+      // 5. Configuración de Precios y WhatsApp
+      const formSettings = document.getElementById('form-settings');
+      const setUsd = document.getElementById('setting-usd');
+      const setCop = document.getElementById('setting-cop-rate');
+      const setWa = document.getElementById('setting-whatsapp');
+
+      const currSettings = window.LicenseService.getSettings();
+      setUsd.value = currSettings.usdPrice || 10;
+      setCop.value = currSettings.copExchangeRate || 4100;
+      setWa.value = currSettings.whatsappNumber || '';
+
+      formSettings.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const updated = {
+          ...window.LicenseService.getSettings(),
+          usdPrice: parseFloat(setUsd.value) || 10,
+          copExchangeRate: parseFloat(setCop.value) || 4100,
+          whatsappNumber: setWa.value.trim()
+        };
+        window.LicenseService.saveSettings(updated);
+        alert('¡Ajustes guardados correctamente! Los precios se actualizarán en la pantalla de bloqueo.');
+        renderDashboard();
+      });
+
+    })();
+  </script>
+</body>
+</html>
