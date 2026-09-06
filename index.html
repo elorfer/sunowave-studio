@@ -6,7 +6,7 @@
   <title>SunoWave Studio - Descargador de Canciones de Suno AI</title>
   <meta name="description" content="Descarga canciones, videos, audios en MP3/M4A, carátulas y letras de Suno AI con la máxima calidad y visualizador en tiempo real.">
   <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
-  <link rel="stylesheet" href="css/style.css?v=7">
+  <link rel="stylesheet" href="css/style.css?v=11">
   <!-- LameJS para codificación de MP3 rápida en el navegador -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
 </head>
@@ -40,6 +40,14 @@
           <span>✂️</span> Cortador & Muestras
         </button>
       </nav>
+
+      <!-- Badge de Suscripción Activa con Días Restantes -->
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div id="user-license-badge" class="user-license-badge" title="Haz clic para ver o renovar tu suscripción">
+          <span class="license-badge-user">💎 <span id="license-badge-text">Pro</span></span>
+          <span id="license-badge-days" class="license-badge-days">30 días</span>
+        </div>
+      </div>
     </header>
 
     <!-- Contenido: Pestaña Individual -->
@@ -648,16 +656,97 @@
       </div>
     </div>
 
+    <!-- Modal de Bloqueo / Paywall ($10 USD / COP) -->
+    <div id="paywall-modal" class="paywall-backdrop" style="display: none;">
+      <div class="paywall-card">
+        <div class="paywall-badge-top">
+          <span>🔒</span> Acceso Exclusivo Studio
+        </div>
+        
+        <h2 class="paywall-title">SunoWave <span>Studio Pro</span></h2>
+        <p class="paywall-desc">
+          Descarga y descifra audio de Suno AI en MP3 (320k), WAV PCM 16-bit sin pérdida, crea demos comerciales con sellos de muestra y transcribe con IA sin restricciones.
+        </p>
+
+        <!-- Precios Dinámicos USD / COP -->
+        <div class="paywall-pricing-box">
+          <div class="pricing-label">Membresía Mensual</div>
+          <div class="pricing-main-row">
+            <span id="paywall-price-usd" class="pricing-usd">$10 USD</span>
+            <span class="pricing-period">/ mes</span>
+          </div>
+          <div class="pricing-cop-row">
+            <span id="paywall-price-cop" class="pricing-cop">≈ $41.000 COP</span>
+          </div>
+          <div id="paywall-rate-note" class="pricing-note">
+            (Tasa estimada: 1 USD ≈ $4.100 COP)
+          </div>
+        </div>
+
+        <!-- Beneficios incluidos -->
+        <div class="paywall-features">
+          <div class="feature-item">
+            <span class="feat-check">✓</span>
+            <span><strong>Descifrado Suno v5.5 DRM ("Mango")</strong> — Audio 100% limpio sin pagar descargas en Suno.</span>
+          </div>
+          <div class="feature-item">
+            <span class="feat-check">✓</span>
+            <span><strong>Formatos de Estudio</strong> — MP3 a 320 kbps, WAV PCM 16-bit y videos oficiales MP4.</span>
+          </div>
+          <div class="feature-item">
+            <span class="feat-check">✓</span>
+            <span><strong>Generador de Muestras</strong> — Crea fragmentos de 15s/30s con tono de protección y sello de muestra.</span>
+          </div>
+          <div class="feature-item">
+            <span class="feat-check">✓</span>
+            <span><strong>Transcriptor IA Whisper</strong> — Extrae letras completas con marcas de tiempo sin límites.</span>
+          </div>
+        </div>
+
+        <!-- Formulario de Activación de Código -->
+        <div class="paywall-form">
+          <label for="paywall-code-input" class="paywall-input-label">¿Tienes un código de activación?</label>
+          <div class="paywall-input-row">
+            <input 
+              type="text" 
+              id="paywall-code-input" 
+              placeholder="Ej: SW-HERMANO-30D-8F2A..." 
+              autocomplete="off"
+              spellcheck="false"
+            >
+            <button id="paywall-btn-activate" class="btn-submit" type="button">
+              <span>🔓</span> Activar Acceso Pro
+            </button>
+          </div>
+          <div id="paywall-status-msg" style="display: none;"></div>
+        </div>
+
+        <!-- Botón de Solicitud por WhatsApp / Nequi -->
+        <div class="paywall-footer-actions">
+          <a id="paywall-btn-whatsapp" href="#" target="_blank" class="btn-whatsapp-pay">
+            <span>💬</span> Solicitar Código vía WhatsApp (Nequi / Bancolombia)
+          </a>
+          <div class="paywall-guarantee">
+            ⚡ Activación inmediata tras confirmación de pago ($10 USD / COP)
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Contenedor de Notificaciones Toast -->
     <div id="toast-container" class="toast-container"></div>
   </div>
 
-  <!-- Scripts con versión para actualización inmediata -->
-  <script src="js/suno-service.js?v=10"></script>
-  <script src="js/audio-converter.js?v=10"></script>
-  <script src="js/visualizer.js?v=10"></script>
-  <script src="js/transcriber.js?v=10"></script>
-  <script src="js/audio-trimmer.js?v=10"></script>
-  <script src="js/app.js?v=10"></script>
+  <!-- Scripts del Sistema de Licencias y Monetización -->
+  <script src="js/license-service.js?v=11"></script>
+  <script src="js/license-client.js?v=11"></script>
+
+  <!-- Scripts Principales de SunoWave -->
+  <script src="js/suno-service.js?v=11"></script>
+  <script src="js/audio-converter.js?v=11"></script>
+  <script src="js/visualizer.js?v=11"></script>
+  <script src="js/transcriber.js?v=11"></script>
+  <script src="js/audio-trimmer.js?v=11"></script>
+  <script src="js/app.js?v=11"></script>
 </body>
 </html>
