@@ -156,6 +156,27 @@ const LicenseService = {
       } catch (e) {}
     }
 
+    // Si no está en registro ni en API, verificar formato algorítmico auto-validable SW-[NOMBRE]-[DIAS]D-[HASH]
+    if (!lic) {
+      const match = cleanCode.match(/^SW-([A-Z0-9]+)-(\d+)D-(\d{4})$/);
+      if (match) {
+        const rawName = match[1];
+        const days = parseInt(match[2], 10) || 30;
+        const formattedName = rawName.charAt(0) + rawName.slice(1).toLowerCase();
+        
+        lic = {
+          code: cleanCode,
+          name: formattedName,
+          daysPurchased: days,
+          createdAt: Date.now(),
+          expiresAt: Date.now() + (days * 24 * 60 * 60 * 1000),
+          status: 'active',
+          lastUsed: Date.now()
+        };
+        this.saveLicenseToRegistry(lic);
+      }
+    }
+
     if (!lic) {
       return { 
         valid: false, 
