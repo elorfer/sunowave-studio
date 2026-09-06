@@ -3,8 +3,16 @@
   "name": "sunowave-studio",
   "rewrites": [
     {
+      "source": "/adminsunoapp",
+      "destination": "/admin.html"
+    },
+    {
       "source": "/api/proxy",
-      "destination": "/api/proxy"
+      "destination": "/api/proxy.js"
+    },
+    {
+      "source": "/api/license",
+      "destination": "/api/license.js"
     }
   ]
 }
