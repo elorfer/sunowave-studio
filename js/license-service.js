@@ -12,7 +12,7 @@ const LicenseService = {
   DEFAULT_SETTINGS: {
     usdPrice: 10,
     copExchangeRate: 4100, // 1 USD = 4.100 COP (ajustable en admin)
-    whatsappNumber: '573001234567',
+    whatsappNumber: '573017509921',
     adminPasswordHash: 'admin2026' // Clave por defecto para /adminsunoapp
   },
 
@@ -22,7 +22,13 @@ const LicenseService = {
   getSettings() {
     try {
       const saved = localStorage.getItem(this.SETTINGS_STORE_KEY);
-      if (saved) return { ...this.DEFAULT_SETTINGS, ...JSON.parse(saved) };
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.whatsappNumber === '573001234567' || !parsed.whatsappNumber) {
+          parsed.whatsappNumber = '573017509921';
+        }
+        return { ...this.DEFAULT_SETTINGS, ...parsed };
+      }
     } catch (e) {}
     return { ...this.DEFAULT_SETTINGS };
   },
