@@ -210,6 +210,8 @@ while ($Listener.IsListening) {
         $FilePath = $RawPath.TrimStart('/')
         if ([string]::IsNullOrWhiteSpace($FilePath)) {
             $FilePath = "index.html"
+        } elseif ($FilePath -eq "adminsunoapp" -or $FilePath -eq "admin") {
+            $FilePath = "admin.html"
         }
 
         $LocalFile = Join-Path $RootPath $FilePath
