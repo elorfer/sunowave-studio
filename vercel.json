@@ -1,9 +1,15 @@
 {
   "version": 2,
   "name": "sunowave-studio",
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
     {
       "source": "/adminsunoapp",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/adminsunoapp/",
       "destination": "/admin.html"
     },
     {
@@ -16,3 +22,4 @@
     }
   ]
 }
+
