@@ -38,7 +38,7 @@
       if (btnWhatsapp) {
         const s = window.LicenseService.getSettings();
         const msg = encodeURIComponent(
-          `¡Hola! Quiero activar mi suscripción a SunoWave Studio (${pricing.usd} / ${pricing.cop} al mes) para descargar, descifrar y recortar música de Suno. ¿Me pasas los datos de pago para Nequi / Bancolombia?`
+          `¡Hola ORFEX! Quiero activar mi acceso a SunoWave Studio (${pricing.usd} / ${pricing.cop} al mes). "Por menos de lo que cuesta una comida, descargas infinitas en Suno". ¿Me pasas los datos de pago para Nequi / Bancolombia?`
         );
         btnWhatsapp.href = `https://wa.me/${s.whatsappNumber.replace(/[^0-9]/g, '')}?text=${msg}`;
       }
