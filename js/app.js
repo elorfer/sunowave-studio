@@ -241,6 +241,13 @@ document.addEventListener('DOMContentLoaded', () => {
     resultCard.style.display = 'block';
     resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
+    // Exponer globalmente para transcriptor, cortador y video maker
+    window.currentActiveSong = {
+      ...song,
+      albumArt: song.imageUrl,
+      creator: song.artist
+    };
+
     // Notificar al transcriptor y cortador que hay una canción nueva
     if (window._txrNotifySong) window._txrNotifySong(song);
     if (window._trimmerNotifySong) window._trimmerNotifySong(song);
@@ -1482,6 +1489,64 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializar carátula por defecto
     renderCoverPreview();
   })(); // fin initTrimmer
+
+  // ==========================================
+  // Enlace rápido desde la canción individual a Video Maker
+  // ==========================================
+  const btnGotoVm = document.getElementById('btn-goto-videomaker-song');
+  if (btnGotoVm) {
+    btnGotoVm.addEventListener('click', () => {
+      const vmTabBtn = document.querySelector('.nav-tab-btn[data-tab="tab-videomaker"]');
+      if (vmTabBtn) vmTabBtn.click();
+      
+      const btnUseSuno = document.getElementById('vm-btn-use-suno');
+      if (btnUseSuno) {
+        setTimeout(() => btnUseSuno.click(), 100);
+      }
+    });
+  }
+
+  // Toggle entre sub-pestañas del Video Maker (Individual vs Lotes)
+  const vmSingleBtn = document.getElementById('vm-mode-single-btn');
+  const vmBatchBtn = document.getElementById('vm-mode-batch-btn');
+  const vmSinglePanel = document.getElementById('vm-panel-single');
+  const vmBatchPanel = document.getElementById('vm-panel-batch');
+
+  if (vmSingleBtn && vmBatchBtn && vmSinglePanel && vmBatchPanel) {
+    vmSingleBtn.addEventListener('click', () => {
+      vmSingleBtn.classList.add('active');
+      vmBatchBtn.classList.remove('active');
+      vmSinglePanel.style.display = 'block';
+      vmBatchPanel.style.display = 'none';
+    });
+
+    vmBatchBtn.addEventListener('click', () => {
+      vmBatchBtn.classList.add('active');
+      vmSingleBtn.classList.remove('active');
+      vmSinglePanel.style.display = 'none';
+      vmBatchPanel.style.display = 'block';
+    });
+  }
+
+  // Indicador de cantidad de archivos en lote seleccionados
+  const batchAudiosInput = document.getElementById('vm-batch-audios-input');
+  const batchCoversInput = document.getElementById('vm-batch-covers-input');
+  const batchAudiosCount = document.getElementById('vm-batch-audios-count');
+  const batchCoversCount = document.getElementById('vm-batch-covers-count');
+
+  if (batchAudiosInput && batchAudiosCount) {
+    batchAudiosInput.addEventListener('change', (e) => {
+      const count = e.target.files ? e.target.files.length : 0;
+      batchAudiosCount.textContent = count > 0 ? `✓ ${count} canciones seleccionadas` : '';
+    });
+  }
+
+  if (batchCoversInput && batchCoversCount) {
+    batchCoversInput.addEventListener('change', (e) => {
+      const count = e.target.files ? e.target.files.length : 0;
+      batchCoversCount.textContent = count > 0 ? `✓ ${count} carátulas seleccionadas` : '';
+    });
+  }
 
 });
 
