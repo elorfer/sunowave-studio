@@ -3,23 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SunoWave Studio - Descargador de Canciones de Suno AI</title>
-  <meta name="description" content="Descarga canciones, videos, audios en MP3/M4A, carátulas y letras de Suno AI con la máxima calidad y visualizador en tiempo real.">
+  <title>SunoWave Studio | Suite de Masterización, Respaldo y Video para Suno AI by ORFEX</title>
+  <meta name="description" content="SunoWave Studio por ORFEX: Suite analógica retro vintage para desencriptar audio de Suno AI v5.5 DRM, transcodificar a MP3 320k y WAV, recortar stems, transcribir letras y renderizar mini videos para TikTok y Reels.">
   <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
-  <link rel="stylesheet" href="css/style.css?v=11">
+
+  <!-- Google Fonts: Cinzel, Playfair Display, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css?v=12">
+  <link rel="stylesheet" href="css/videomaker.css?v=12">
+
+  <!-- Google AdSense Publisher Script Placeholder -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+
   <!-- LameJS para codificación de MP3 rápida en el navegador -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
 </head>
 <body>
+  <!-- Capas de textura y calidez retro analógica -->
+  <div class="vintage-bg-layer"></div>
+  <div class="vintage-grid-texture"></div>
 
   <div class="app-container">
-    <!-- Barra de Navegación -->
+    <!-- Top AdSense Banner Slot -->
+    <div class="adsense-slot-wrapper" style="margin-top: 15px; margin-bottom: 5px;">
+      <div class="adsense-label">Publicidad Patrocinada</div>
+      <div class="adsense-container adsense-responsive">
+        <!-- Google AdSense Unit: SunoWave_Header_Top -->
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-slot="1122334455"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+      </div>
+    </div>
+
+    <!-- Barra de Navegación Analógica -->
     <header class="navbar">
-      <a href="#" class="brand-logo">
+      <a href="index.html" class="brand-logo">
         <img src="assets/logo.jpg" alt="SunoWave Logo">
         <div>
           <span class="brand-title">SunoWave</span>
-          <span class="brand-badge">v4 Studio</span>
+          <span class="brand-badge">Analog Studio</span>
         </div>
       </a>
 
@@ -917,6 +948,178 @@
       </div>
     </section>
 
+    <!-- AdSense Slot In-Content -->
+    <div class="adsense-slot-wrapper">
+      <div class="adsense-label">Publicidad Patrocinada</div>
+      <div class="adsense-container adsense-responsive">
+        <!-- Google AdSense Unit: SunoWave_InContent_Middle -->
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-slot="3344556677"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+      </div>
+    </div>
+
+    <!-- SECCIÓN EDITORIAL & BASE DE CONOCIMIENTO (AdSense High Value Content) -->
+    <section id="editorial-guide" class="editorial-section">
+      <div class="editorial-card">
+        <div class="editorial-header">
+          <div class="editorial-pill">📖 Cuaderno de Estudio &bull; Edición 2026</div>
+          <h2 class="editorial-title">Guía Maestra de Formatos de Audio y Preservación de Stems AI</h2>
+          <p class="editorial-subtitle">
+            Aprende cómo optimizar la fidelidad acústica de tus pistas generadas por inteligencia artificial, entender las diferencias críticas entre MP3, WAV y M4A, y proteger tus derechos de autor.
+          </p>
+        </div>
+
+        <div class="editorial-grid">
+          <article class="editorial-article">
+            <h3>🎛️ 1. WAV PCM vs MP3 a 320 kbps: ¿Cuál elegir?</h3>
+            <p>
+              Al descargar o masterizar una pista generada por redes neuronales (como los modelos v3.5 y v4 de Suno AI), el formato contenedor define la pureza de los transitorios:
+            </p>
+            <ul>
+              <li><strong>WAV (PCM 16-bit / 44.1 kHz):</strong> Es audio lineal sin compresión con pérdida. Conserva cada matiz espectral, ideal para importar a tu DAW favorito (Ableton Live, FL Studio, Logic Pro) y aplicar ecualización analógica, compresión o corrección vocal.</li>
+              <li><strong>MP3 (320 kbps CBR con LAME):</strong> Ofrece un equilibrio perfecto entre calidad auditiva indistinguible para el oído humano y portabilidad ligera (reducción de hasta un 80% en peso). Es el formato predilecto para distribución digital, radio streaming y almacenamiento móvil.</li>
+              <li><strong>M4A / AAC de Estudio:</strong> Provee mayor eficiencia de codificación en frecuencias extremas (>18 kHz) a tasas de bits intermedias.</li>
+            </ul>
+          </article>
+
+          <article class="editorial-article">
+            <h3>🛡️ 2. Desencriptado Ético y el Protocolo Mango (v5.5 DRM)</h3>
+            <p>
+              Con la actualización de seguridad v5.5 ("Mango"), las plataformas de generación de audio comenzaron a encapsular los fragmentos de audio mediante cifrados temporales. SunoWave Studio incorpora un motor de reconstrucción matemática local que une los paquetes dispersos sin alterar la envolvente dinámica ni inyectar artefactos de cuantización.
+            </p>
+            <p>
+              Todo el procedimiento ocurre en la memoria volátil de tu navegador (Web Audio API), garantizando que tu contenido permanezca bajo tu estricta custodia privada sin depender de servidores intermediarios.
+            </p>
+          </article>
+
+          <article class="editorial-article">
+            <h3>🎬 3. Video Marketing para Músicos en Redes Sociales</h3>
+            <p>
+              La música con IA adquiere viralidad en plataformas audiovisuales de formato vertical (TikTok, Instagram Reels, YouTube Shorts). Con nuestro <strong>Creador de Mini Videos</strong> integrado, puedes sincronizar en menos de 5 segundos tu carátula cuadrada con ondas de espectro analógico y barras de progreso elegantes a 1080x1920 (9:16) o 1080x1080 (1:1), exportando clips listos para publicar sin requerir programas pesados de edición como Premiere o After Effects.
+            </p>
+          </article>
+        </div>
+
+        <!-- ACORDEÓN DE PREGUNTAS FRECUENTES (FAQ) -->
+        <div id="faqs" class="faq-section" style="margin-top: 36px;">
+          <h3 style="font-family: var(--font-title); font-size: 24px; color: var(--brass-gold); margin-bottom: 20px; text-align: center;">
+            Preguntas Frecuentes del Estudio (FAQ)
+          </h3>
+
+          <div class="faq-accordion">
+            <details class="faq-item">
+              <summary class="faq-question">
+                <span>¿Es legal respaldar y descargar mis canciones creadas en Suno AI?</span>
+                <span class="faq-arrow">▾</span>
+              </summary>
+              <div class="faq-answer">
+                Sí. De acuerdo con los términos de uso legítimo (Fair Use) y las licencias de creador de las plataformas de audio generativo, los usuarios disponen del derecho de archivar, respaldar y transformar sus creaciones musicales para uso personal o comercial (según su plan de suscripción en Suno). SunoWave Studio actúa como una suite de herramientas de procesamiento técnico y respaldo local.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary class="faq-question">
+                <span>¿Por qué el procesamiento de audio ocurre 100% en mi navegador?</span>
+                <span class="faq-arrow">▾</span>
+              </summary>
+              <div class="faq-answer">
+                Por dos razones fundamentales: <strong>Privacidad absoluta</strong> y <strong>Velocidad instantánea</strong>. Al utilizar la tecnología Web Audio API y WebAssembly (LameJS / MediaRecorder), no necesitas subir tus archivos a servidores desconocidos ni esperar filas de procesamiento en la nube. Tus stems y pistas nunca salen de tu dispositivo.
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary class="faq-question">
+                <span>¿Cómo funciona la membresía mensual de $10 USD y el pago en Pesos Colombianos (COP)?</span>
+                <span class="faq-arrow">▾</span>
+              </summary>
+              <div class="faq-answer">
+                Ofrecemos un pase mensual de estudio por un costo simbólico de $10 USD (o aproximadamente $41.000 COP a tasa de cambio actual) para cubrir los costos de desarrollo y servidores de alta velocidad. Puedes solicitar tu código de desbloqueo al instante contactando directamente a nuestro fundador ORFEX vía WhatsApp (Nequi, Bancolombia o transferencia internacional).
+              </div>
+            </details>
+
+            <details class="faq-item">
+              <summary class="faq-question">
+                <span>¿Cómo utilizo el Creador de Mini Videos por lotes?</span>
+                <span class="faq-arrow">▾</span>
+              </summary>
+              <div class="faq-answer">
+                Dirígete a la pestaña "Crear Mini Video", activa la opción "Procesamiento por Lotes" y arrastra múltiples archivos MP3 junto con sus respectivas carátulas de portada. Nuestro motor de renderizado acelerado por hardware creará los videos MP4 en serie automáticamente con barras de frecuencia y estilos retro vintage.
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AdSense Slot Bottom -->
+    <div class="adsense-slot-wrapper">
+      <div class="adsense-label">Publicidad Patrocinada</div>
+      <div class="adsense-container adsense-responsive">
+        <!-- Google AdSense Unit: SunoWave_Footer_Bottom -->
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-slot="9988776655"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+      </div>
+    </div>
+
+    <!-- Luxury Vintage Studio Footer -->
+    <footer class="studio-vintage-footer">
+      <div class="sv-footer-brand">
+        <div class="sv-footer-logo">📻 SUNOWAVE STUDIO</div>
+        <p class="sv-footer-tagline">
+          Estación analógica de masterización, descifrado v5.5 DRM ("Mango") y generación de mini videos de alta fidelidad para creadores de música con inteligencia artificial. Artesanía digital <strong>by ORFEX</strong>.
+        </p>
+      </div>
+
+      <div class="sv-footer-nav-col">
+        <h4>Cumplimiento & Legal</h4>
+        <ul>
+          <li><a href="politica-de-privacidad.html">Política de Privacidad</a></li>
+          <li><a href="terminos-de-servicio.html">Términos de Servicio</a></li>
+          <li><a href="sobre-nosotros.html">Sobre Nosotros</a></li>
+          <li><a href="contacto.html">Contacto y Soporte</a></li>
+        </ul>
+      </div>
+
+      <div class="sv-footer-nav-col">
+        <h4>Herramientas de Estudio</h4>
+        <ul>
+          <li><a href="#tab-single">Extractor & Desencriptador</a></li>
+          <li><a href="#tab-batch">Descarga por Lotes</a></li>
+          <li><a href="#tab-trimmer">Cortador & Sellos de Audio</a></li>
+          <li><a href="#tab-videomaker">Creador de Mini Videos</a></li>
+        </ul>
+      </div>
+
+      <div class="sv-footer-nav-col">
+        <h4>Atención Directa</h4>
+        <p style="color: var(--leather-sand); font-size: 13px; margin-bottom: 12px;">
+          ¿Dudas con tu suscripción o necesitas asistencia técnica personalizada?
+        </p>
+        <a href="https://wa.me/573017509921?text=Hola%20ORFEX,%20necesito%20soporte%20en%20SunoWave" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="font-size: 13px; padding: 10px 14px; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+          💬 WhatsApp +57 301 750 9921
+        </a>
+      </div>
+
+      <div class="sv-footer-bottom">
+        <span>&copy; 2026 SunoWave Studio. Todos los derechos reservados. Desarrollado con pasión analógica por <strong>ORFEX</strong>.</span>
+        <span>Apto para Google AdSense &bull; RGPD / CCPA Compliant</span>
+      </div>
+    </footer>
+
     <!-- Modal de Letras -->
     <div id="lyrics-modal" class="modal-backdrop">
       <div class="modal-dialog">
@@ -946,8 +1149,8 @@
         </div>
         
         <h2 class="paywall-title">SunoWave <span>Studio Pro</span></h2>
-        <div style="margin: 6px 0 16px; padding: 8px 14px; background: rgba(0, 206, 201, 0.1); border: 1px solid rgba(0, 206, 201, 0.3); border-radius: var(--radius-full); display: inline-block;">
-          <span style="color: var(--neon-cyan); font-weight: 700; font-size: 13px; letter-spacing: 0.3px;">
+        <div style="margin: 6px 0 16px; padding: 8px 14px; background: rgba(212, 175, 55, 0.12); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: var(--radius-full); display: inline-block;">
+          <span style="color: var(--brass-gold); font-weight: 700; font-size: 13px; letter-spacing: 0.3px;">
             🍕 "Por menos de lo que cuesta una comida, descargas infinitas en Suno"
           </span>
         </div>
@@ -1022,6 +1225,21 @@
 
     <!-- Contenedor de Notificaciones Toast -->
     <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <!-- Banner Flotante de Consentimiento de Cookies (AdSense & RGPD Compliance) -->
+  <div id="cookie-consent-banner" class="cookie-banner" style="display: none;">
+    <div class="cookie-text">
+      🍪 <strong>Privacidad y Cookies en SunoWave Studio:</strong> Utilizamos cookies propias y de terceros (Google AdSense y analítica) para ofrecer publicidad contextual relevante, recordar tus preferencias de audio y optimizar tu experiencia en el estudio. Consulta nuestra <a href="politica-de-privacidad.html">Política de Privacidad</a> y <a href="terminos-de-servicio.html">Términos de Servicio</a>.
+    </div>
+    <div class="cookie-actions">
+      <button id="btn-accept-cookies" class="btn btn-primary" type="button" style="font-size: 13px; padding: 8px 18px;">
+        Entendido y Aceptar
+      </button>
+      <a href="politica-de-privacidad.html" class="btn btn-secondary" style="font-size: 13px; padding: 8px 14px;">
+        Saber Más
+      </a>
+    </div>
   </div>
 
   <!-- Scripts del Sistema de Licencias y Monetización -->
