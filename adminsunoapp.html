@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SunoWave Studio — Panel de Control de Suscripciones</title>
+  <title>SunoWave Studio — Panel de Control de Suscripciones by ORFEX</title>
   <link rel="icon" type="image/x-icon" href="/assets/icon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css?v=11">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css?v=12">
   <style>
     body {
-      background: radial-gradient(ellipse at 50% 10%, #1a1635 0%, #0d0b18 55%, #05040a 100%);
-      color: #f1f2f6;
+      background: radial-gradient(ellipse at 50% 10%, #2a160d 0%, #170d07 55%, #0d0603 100%);
+      color: #f7ede2;
       min-height: 100vh;
       font-family: 'Plus Jakarta Sans', sans-serif;
       margin: 0;
@@ -28,16 +28,25 @@
       padding: 20px;
     }
     .admin-login-card {
-      background: rgba(22, 19, 43, 0.85);
-      border: 1px solid rgba(139, 92, 246, 0.3);
+      background: rgba(38, 22, 14, 0.9);
+      border: 1px solid rgba(212, 175, 55, 0.35);
       backdrop-filter: blur(25px);
       -webkit-backdrop-filter: blur(25px);
-      border-radius: 24px;
+      border-radius: 20px;
       padding: 40px;
       max-width: 420px;
       width: 100%;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 35px rgba(108, 92, 231, 0.2);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 35px rgba(212, 175, 55, 0.15);
       text-align: center;
+      position: relative;
+    }
+    .admin-login-card::before {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 1px dashed rgba(212, 175, 55, 0.2);
+      border-radius: 14px;
+      pointer-events: none;
     }
 
     /* Dashboard Principal */
@@ -66,20 +75,20 @@
       margin-bottom: 35px;
     }
     .stat-card {
-      background: rgba(26, 22, 50, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(38, 22, 14, 0.75);
+      border: 1px solid rgba(212, 175, 55, 0.2);
       border-radius: 18px;
       padding: 24px;
       backdrop-filter: blur(15px);
       display: flex;
       align-items: center;
       gap: 18px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
       transition: transform .2s, border-color .2s;
     }
     .stat-card:hover {
       transform: translateY(-3px);
-      border-color: rgba(108, 92, 231, 0.4);
+      border-color: var(--brass-gold);
     }
     .stat-icon {
       width: 52px;
@@ -92,30 +101,32 @@
       flex-shrink: 0;
     }
     .stat-val {
-      font-family: 'Outfit', sans-serif;
+      font-family: 'Cinzel', serif;
       font-size: 28px;
       font-weight: 700;
       margin-bottom: 4px;
-      color: #fff;
+      color: var(--brass-gold);
     }
     .stat-lbl {
       font-size: 13px;
-      color: #a4b0be;
+      color: var(--leather-sand);
     }
 
     /* Cajas y Secciones */
     .admin-section {
-      background: rgba(22, 19, 43, 0.7);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(38, 22, 14, 0.85);
+      border: 1px solid rgba(212, 175, 55, 0.25);
       border-radius: 20px;
       padding: 28px;
       margin-bottom: 30px;
       backdrop-filter: blur(20px);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.5);
     }
     .admin-section-title {
-      font-family: 'Outfit', sans-serif;
+      font-family: 'Cinzel', serif;
       font-size: 20px;
       font-weight: 700;
+      color: var(--brass-gold);
       margin-top: 0;
       margin-bottom: 20px;
       display: flex;
