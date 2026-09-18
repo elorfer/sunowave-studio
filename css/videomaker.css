@@ -29,16 +29,16 @@
 }
 
 .aspect-btn:hover {
-  border-color: var(--neon-cyan);
-  color: #fff;
-  background: rgba(0, 206, 201, 0.08);
+  border-color: var(--brass-gold);
+  color: var(--parchment-100);
+  background: rgba(212, 175, 55, 0.08);
 }
 
 .aspect-btn.active {
-  border-color: var(--neon-cyan);
-  background: rgba(0, 206, 201, 0.15);
-  color: var(--neon-cyan);
-  box-shadow: 0 0 16px rgba(0, 206, 201, 0.25);
+  border-color: var(--brass-gold);
+  background: rgba(212, 175, 55, 0.16);
+  color: var(--brass-gold);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.22);
 }
 
 .aspect-icon-box {
@@ -53,7 +53,7 @@
 }
 
 .aspect-btn.active .aspect-icon-box {
-  border-color: var(--neon-cyan);
+  border-color: var(--brass-gold);
   border-style: solid;
 }
 
@@ -95,15 +95,15 @@
 }
 
 .vm-theme-btn:hover {
-  border-color: var(--neon-purple);
-  color: #fff;
+  border-color: var(--brass-gold);
+  color: var(--parchment-100);
 }
 
 .vm-theme-btn.active {
-  border-color: var(--neon-purple);
-  background: rgba(108, 92, 231, 0.2);
-  color: #fff;
-  box-shadow: 0 0 14px rgba(108, 92, 231, 0.3);
+  border-color: var(--brass-gold);
+  background: rgba(212, 175, 55, 0.18);
+  color: var(--brass-gold);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.25);
 }
 
 /* Contenedor de Previsualización Canvas */
@@ -111,18 +111,18 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle at center, rgba(20, 25, 45, 0.8) 0%, rgba(8, 10, 20, 0.95) 100%);
+  background: radial-gradient(circle at center, rgba(38, 22, 14, 0.95) 0%, rgba(18, 10, 6, 0.98) 100%);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 24px;
   min-height: 480px;
   position: relative;
   overflow: hidden;
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.7);
 }
 
 .vm-canvas-container {
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 206, 201, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(212, 175, 55, 0.2);
   border-radius: 18px;
   overflow: hidden;
   transition: all 0.3s ease;
