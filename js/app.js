@@ -1548,5 +1548,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ==========================================
+  // Banner de Consentimiento de Cookies (AdSense & RGPD)
+  // ==========================================
+  const cookieBanner = document.getElementById('cookie-consent-banner');
+  const btnAcceptCookies = document.getElementById('btn-accept-cookies');
+  if (cookieBanner && btnAcceptCookies) {
+    const cookiesAccepted = localStorage.getItem('sunowave_cookies_accepted');
+    if (!cookiesAccepted) {
+      setTimeout(() => {
+        cookieBanner.style.display = 'flex';
+      }, 1000);
+    }
+
+    btnAcceptCookies.addEventListener('click', () => {
+      localStorage.setItem('sunowave_cookies_accepted', 'true');
+      cookieBanner.style.opacity = '0';
+      cookieBanner.style.transition = 'opacity 0.4s ease';
+      setTimeout(() => {
+        cookieBanner.style.display = 'none';
+      }, 400);
+    });
+  }
+
 });
 
