@@ -75,11 +75,11 @@
         </button>
       </nav>
 
-      <!-- Badge de Suscripción Activa con Días Restantes -->
+      <!-- Badge de Estudio Gratuito & Libre -->
       <div style="display: flex; align-items: center; gap: 10px;">
-        <div id="user-license-badge" class="user-license-badge" title="Haz clic para ver o renovar tu suscripción">
-          <span class="license-badge-user">💎 <span id="license-badge-text">Pro</span></span>
-          <span id="license-badge-days" class="license-badge-days">30 días</span>
+        <div class="user-license-badge" style="cursor: default;" title="Estudio de audio 100% libre y gratuito">
+          <span class="license-badge-user">📻 <span>Free Studio</span></span>
+          <span class="license-badge-days" style="color: var(--brass-gold);">Ilimitado</span>
         </div>
       </div>
     </header>
@@ -1036,11 +1036,11 @@
 
             <details class="faq-item">
               <summary class="faq-question">
-                <span>¿Cómo funciona la membresía mensual de $10 USD y el pago en Pesos Colombianos (COP)?</span>
+                <span>¿Es SunoWave Studio completamente gratuito?</span>
                 <span class="faq-arrow">▾</span>
               </summary>
               <div class="faq-answer">
-                Ofrecemos un pase mensual de estudio por un costo simbólico de $10 USD (o aproximadamente $41.000 COP a tasa de cambio actual) para cubrir los costos de desarrollo y servidores de alta velocidad. Puedes solicitar tu código de desbloqueo al instante contactando directamente a nuestro fundador ORFEX vía WhatsApp (Nequi, Bancolombia o transferencia internacional).
+                Sí, absolutamente. Todas las herramientas del estudio (descarga y descifrado v5.5 DRM "Mango", transcodificación a MP3 320k y WAV PCM 16-bit, creador de mini videos en lote y transcriptor IA) son <strong>100% gratuitas y sin límites de uso</strong>. La plataforma se financia íntegramente mediante publicidad contextual de Google AdSense.
               </div>
             </details>
 
@@ -1107,7 +1107,7 @@
       <div class="sv-footer-nav-col">
         <h4>Atención Directa</h4>
         <p style="color: var(--leather-sand); font-size: 13px; margin-bottom: 12px;">
-          ¿Dudas con tu suscripción o necesitas asistencia técnica personalizada?
+          ¿Tienes preguntas, sugerencias o requieres asistencia técnica?
         </p>
         <a href="https://wa.me/573017509921?text=Hola%20ORFEX,%20necesito%20soporte%20en%20SunoWave" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="font-size: 13px; padding: 10px 14px; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
           💬 WhatsApp +57 301 750 9921
@@ -1141,88 +1141,6 @@
       </div>
     </div>
 
-    <!-- Modal de Bloqueo / Paywall ($10 USD / COP) -->
-    <div id="paywall-modal" class="paywall-backdrop" style="display: none;">
-      <div class="paywall-card">
-        <div class="paywall-badge-top">
-          <span>⚡</span> by ORFEX
-        </div>
-        
-        <h2 class="paywall-title">SunoWave <span>Studio Pro</span></h2>
-        <div style="margin: 6px 0 16px; padding: 8px 14px; background: rgba(212, 175, 55, 0.12); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: var(--radius-full); display: inline-block;">
-          <span style="color: var(--brass-gold); font-weight: 700; font-size: 13px; letter-spacing: 0.3px;">
-            🍕 "Por menos de lo que cuesta una comida, descargas infinitas en Suno"
-          </span>
-        </div>
-        <p class="paywall-desc">
-          Descarga y descifra audio de Suno AI en MP3 (320k), WAV PCM 16-bit sin pérdida, crea demos comerciales con sellos de muestra y transcribe con IA sin restricciones.
-        </p>
-
-        <!-- Precios Dinámicos USD / COP -->
-        <div class="paywall-pricing-box">
-          <div class="pricing-label">Membresía Mensual</div>
-          <div class="pricing-main-row">
-            <span id="paywall-price-usd" class="pricing-usd">$10 USD</span>
-            <span class="pricing-period">/ mes</span>
-          </div>
-          <div class="pricing-cop-row">
-            <span id="paywall-price-cop" class="pricing-cop">≈ $41.000 COP</span>
-          </div>
-          <div id="paywall-rate-note" class="pricing-note">
-            (Tasa estimada: 1 USD ≈ $4.100 COP)
-          </div>
-        </div>
-
-        <!-- Beneficios incluidos -->
-        <div class="paywall-features">
-          <div class="feature-item">
-            <span class="feat-check">✓</span>
-            <span><strong>Descifrado Suno v5.5 DRM ("Mango")</strong> — Audio 100% limpio sin pagar descargas en Suno.</span>
-          </div>
-          <div class="feature-item">
-            <span class="feat-check">✓</span>
-            <span><strong>Formatos de Estudio</strong> — MP3 a 320 kbps, WAV PCM 16-bit y videos oficiales MP4.</span>
-          </div>
-          <div class="feature-item">
-            <span class="feat-check">✓</span>
-            <span><strong>Generador de Muestras</strong> — Crea fragmentos de 15s/30s con tono de protección y sello de muestra.</span>
-          </div>
-          <div class="feature-item">
-            <span class="feat-check">✓</span>
-            <span><strong>Transcriptor IA Whisper</strong> — Extrae letras completas con marcas de tiempo sin límites.</span>
-          </div>
-        </div>
-
-        <!-- Formulario de Activación de Código -->
-        <div class="paywall-form">
-          <label for="paywall-code-input" class="paywall-input-label">¿Tienes un código de activación?</label>
-          <div class="paywall-input-row">
-            <input 
-              type="text" 
-              id="paywall-code-input" 
-              placeholder="Ej: SW-HERMANO-30D-8F2A..." 
-              autocomplete="off"
-              spellcheck="false"
-            >
-            <button id="paywall-btn-activate" class="btn-submit" type="button">
-              <span>🔓</span> Activar Acceso Pro
-            </button>
-          </div>
-          <div id="paywall-status-msg" style="display: none;"></div>
-        </div>
-
-        <!-- Botón de Solicitud por WhatsApp / Nequi -->
-        <div class="paywall-footer-actions">
-          <a id="paywall-btn-whatsapp" href="https://wa.me/573017509921" target="_blank" class="btn-whatsapp-pay">
-            <span>💬</span> Pedir Código por WhatsApp (301 750 9921 - Nequi / Bancolombia)
-          </a>
-          <div class="paywall-guarantee">
-            ⚡ Activación inmediata con ORFEX tras confirmación de pago ($10 USD / COP)
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Contenedor de Notificaciones Toast -->
     <div id="toast-container" class="toast-container"></div>
   </div>
@@ -1242,14 +1160,10 @@
     </div>
   </div>
 
-  <!-- Scripts del Sistema de Licencias y Monetización -->
-  <script src="js/license-service.js?v=11"></script>
-  <script src="js/license-client.js?v=11"></script>
-
   <!-- Scripts Principales de SunoWave -->
-  <script src="js/suno-service.js?v=11"></script>
-  <script src="js/audio-converter.js?v=11"></script>
-  <script src="js/visualizer.js?v=11"></script>
+  <script src="js/suno-service.js?v=12"></script>
+  <script src="js/audio-converter.js?v=12"></script>
+  <script src="js/visualizer.js?v=12"></script>
   <script src="js/transcriber.js?v=12"></script>
   <script src="js/audio-trimmer.js?v=12"></script>
   <script src="js/video-maker.js?v=12"></script>
