@@ -48,9 +48,9 @@
     <header class="navbar">
       <a href="index.html" class="brand-logo">
         <img src="assets/logo.jpg" alt="SunoWave Logo">
-        <div>
+        <div class="brand-logo-text">
           <span class="brand-title">SunoWave</span>
-          <span class="brand-badge">Analog Studio</span>
+          <span class="brand-badge">Studio</span>
         </div>
       </a>
 
@@ -64,14 +64,8 @@
         <button class="nav-tab-btn" data-tab="tab-history">
           <span>🕒</span> Historial
         </button>
-        <button class="nav-tab-btn" data-tab="tab-transcribe">
-          <span>🎤</span> Transcribir
-        </button>
         <button class="nav-tab-btn" data-tab="tab-trimmer">
           <span>✂️</span> Cortador & Muestras
-        </button>
-        <button class="nav-tab-btn" data-tab="tab-videomaker">
-          <span>🎬</span> Crear Mini Video
         </button>
       </nav>
 
@@ -336,133 +330,6 @@
     </section>
 
     <!-- ================================================ -->
-    <!-- Pestaña: Transcriptor de Audio a Texto           -->
-    <!-- ================================================ -->
-    <section id="tab-transcribe" class="tab-content">
-      <div class="hero-section" style="padding-bottom: 0;">
-        <div class="hero-pill"><span>🤖</span> Powered by OpenAI Whisper · 100% Local · Sin API Key</div>
-        <h1 class="hero-title" style="font-size: clamp(1.6rem,4vw,2.4rem);">Transcriptor de <span>Audio a Texto</span></h1>
-        <p class="hero-subtitle" style="max-width:600px;">Convierte cualquier audio en texto con IA. Puedes transcribir la canción actual de Suno o subir tu propio archivo. El modelo corre en tu navegador — privado y sin límites.</p>
-      </div>
-
-      <!-- Tarjeta principal del transcriptor -->
-      <div class="result-card transcriptor-card" style="display: block !important; margin-top: 28px;">
-
-        <!-- Fuente del Audio -->
-        <div style="margin-bottom:24px;">
-          <h3 class="downloads-section-title" style="margin-bottom:16px;"><span>🎧</span> Fuente del Audio</h3>
-
-          <!-- Opción A: Canción Suno actual -->
-          <button id="txr-btn-use-suno" style="
-            width:100%; margin-bottom:14px;
-            background:linear-gradient(135deg,rgba(108,92,231,0.2),rgba(0,206,201,0.12));
-            border:1.5px solid rgba(0,206,201,0.35); border-radius:var(--radius-md);
-            padding:16px 20px; display:flex; align-items:center; gap:14px;
-            cursor:pointer; text-align:left; transition:all .2s ease; color:var(--text-main);">
-            <span style="font-size:28px;">🎵</span>
-            <div>
-              <div style="font-family:var(--font-title);font-size:15px;font-weight:700;">Usar canción de Suno cargada</div>
-              <div id="txr-suno-name" style="font-size:12px;color:var(--text-muted);margin-top:2px;">Carga una canción primero en la pestaña Individual</div>
-            </div>
-          </button>
-
-          <!-- Opción B: Subir archivo -->
-          <div id="txr-drop-zone" style="
-            border:2px dashed rgba(0,206,201,0.4); border-radius:var(--radius-md);
-            background:var(--bg-elevated); padding:32px 20px;
-            text-align:center; cursor:pointer; transition:all .2s ease;
-            position:relative;">
-            <input type="file" id="txr-file-input" accept="audio/*,video/*"
-              style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2;">
-            <div style="pointer-events:none;">
-              <div style="font-size:40px;margin-bottom:10px;">📂</div>
-              <div style="font-family:var(--font-title);font-size:16px;font-weight:700;color:var(--text-main);margin-bottom:6px;">
-                Arrastra tu archivo aquí
-              </div>
-              <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
-                o haz clic para seleccionar desde tu computadora
-              </div>
-              <span style="
-                display:inline-block; padding:10px 24px;
-                background:var(--grad-primary); border-radius:var(--radius-full);
-                font-size:14px; font-weight:600; color:#fff;">
-                📁 Seleccionar Archivo
-              </span>
-              <div style="margin-top:10px;font-size:11px;color:var(--text-dim);">
-                MP3 · WAV · M4A · OGG · FLAC · MP4 · WEBM
-              </div>
-            </div>
-          </div>
-
-          <!-- Fuente seleccionada -->
-          <div id="txr-selected-source" style="margin-top:14px; padding:12px 16px; background:var(--bg-elevated); border-radius:var(--radius-md); border:1px solid var(--neon-cyan); display:none; font-size:13px; color:var(--neon-cyan);">
-            <span style="opacity:.6;">Fuente seleccionada:</span> <strong id="txr-source-label"></strong>
-          </div>
-        </div>
-
-
-        <!-- Opciones de Idioma -->
-        <div style="margin-bottom:24px;">
-          <h3 class="downloads-section-title" style="margin-bottom:12px;"><span>🌐</span> Idioma del Audio</h3>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="txr-lang-btn active" data-lang="auto">🌍 Auto-detectar</button>
-            <button class="txr-lang-btn" data-lang="es">🇪🇸 Español</button>
-            <button class="txr-lang-btn" data-lang="en">🇺🇸 Inglés</button>
-            <button class="txr-lang-btn" data-lang="pt">🇧🇷 Portugués</button>
-            <button class="txr-lang-btn" data-lang="fr">🇫🇷 Francés</button>
-            <button class="txr-lang-btn" data-lang="de">🇩🇪 Alemán</button>
-            <button class="txr-lang-btn" data-lang="ja">🇯🇵 Japonés</button>
-          </div>
-        </div>
-
-        <!-- Botón Transcribir -->
-        <button id="txr-btn-start" class="btn-submit" style="width:100%; font-size:1rem; padding:16px; border-radius:var(--radius-md); letter-spacing:.5px;" disabled>
-          <span id="txr-btn-label">🎤 Transcribir Audio</span>
-        </button>
-
-        <!-- Barra de Progreso -->
-        <div id="txr-progress-wrap" style="margin-top:16px; display:none;">
-          <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-            <span id="txr-progress-msg" style="color:var(--neon-cyan);">Iniciando...</span>
-            <span id="txr-progress-pct" style="color:var(--text-muted);">0%</span>
-          </div>
-          <div style="height:6px; background:var(--bg-elevated); border-radius:var(--radius-full); overflow:hidden;">
-            <div id="txr-progress-bar" style="height:100%; width:0%; background:var(--grad-primary); transition:width .3s ease; border-radius:var(--radius-full);"></div>
-          </div>
-        </div>
-
-        <!-- Resultado de la Transcripción -->
-        <div id="txr-result-section" style="margin-top:28px; display:none;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-            <h3 class="downloads-section-title" style="margin:0;"><span>📝</span> Transcripción</h3>
-            <div style="display:flex; gap:10px;">
-              <button id="txr-btn-copy" class="btn-paste" style="padding:8px 16px; font-size:13px;">📋 Copiar</button>
-              <button id="txr-btn-download-txt" class="btn-submit" style="padding:8px 16px; font-size:13px;">💾 .TXT</button>
-              <button id="txr-btn-toggle-ts" class="btn-paste" style="padding:8px 16px; font-size:13px;">🕐 Timestamps</button>
-            </div>
-          </div>
-
-          <!-- Vista limpia (solo texto) -->
-          <div id="txr-plain-view" style="background:var(--bg-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:20px; font-size:15px; line-height:1.8; color:var(--text-main); white-space:pre-wrap; max-height:400px; overflow-y:auto;"></div>
-
-          <!-- Vista con timestamps -->
-          <div id="txr-ts-view" style="background:var(--bg-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:20px; max-height:400px; overflow-y:auto; display:none;"></div>
-
-          <!-- Estadísticas de la transcripción -->
-          <div id="txr-stats" style="margin-top:12px; display:flex; gap:20px; font-size:12px; color:var(--text-muted);"></div>
-        </div>
-      </div>
-
-      <!-- Info / Nota sobre el modelo -->
-      <div style="margin-top:24px; padding:16px 20px; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); font-size:13px; color:var(--text-muted); display:flex; gap:12px; align-items:flex-start;">
-        <span style="font-size:20px;">💡</span>
-        <div>
-          <strong style="color:var(--text-main);">Whisper Tiny de OpenAI</strong> — La primera vez descarga ~40 MB del modelo (se guarda en caché en tu navegador). Las siguientes veces es instantáneo. Funciona completamente offline y sin API Key. Para mayor precisión, los audios en inglés funcionan mejor.
-        </div>
-      </div>
-    </section>
-
-    <!-- ================================================ -->
     <!-- Pestaña: Cortador de Audio & Generador de Muestras -->
     <!-- ================================================ -->
     <section id="tab-trimmer" class="tab-content">
@@ -676,277 +543,7 @@
       </div>
     </section>
 
-    <!-- ================================================ -->
-    <!-- Pestaña: Creador & Editor de Mini Videos         -->
-    <!-- ================================================ -->
-    <section id="tab-videomaker" class="tab-content">
-      <div class="hero-section" style="padding-bottom: 0;">
-        <div class="hero-pill"><span>🎬</span> Video Maker & Reels Generator · Individual & Por Lotes</div>
-        <h1 class="hero-title" style="font-size: clamp(1.6rem,4vw,2.4rem);">Editor de <span>Mini Videos & Reels</span></h1>
-        <p class="hero-subtitle" style="max-width:680px;">
-          Fusiona cualquier canción con su carátula para generar videos verticales (9:16 Reels/TikTok), cuadrados (1:1) o panorámicos (16:9) con ondas reactivas y animación de vinilo. Puedes procesar un video individual o subir múltiples a la vez.
-        </p>
-      </div>
 
-      <!-- Tarjeta Principal del Video Maker -->
-      <div class="result-card videomaker-card" style="margin-top: 28px;">
-        
-        <!-- Pestañitas internas: Modo Individual vs Modo Lotes -->
-        <div style="display:flex; gap:10px; margin-bottom: 24px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px;">
-          <button id="vm-mode-single-btn" class="nav-tab-btn active" style="padding: 8px 18px; font-size: 13px;" type="button">
-            <span>🎵</span> Video Individual
-          </button>
-          <button id="vm-mode-batch-btn" class="nav-tab-btn" style="padding: 8px 18px; font-size: 13px;" type="button">
-            <span>📑</span> Procesamiento por Lotes (Varios a la vez)
-          </button>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- MODO A: VIDEO INDIVIDUAL                   -->
-        <!-- ========================================== -->
-        <div id="vm-panel-single">
-          <div style="display:grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: start;">
-            
-            <!-- Columna Izquierda: Configuración & Carga -->
-            <div>
-              <!-- 1. Carga de Archivos -->
-              <div style="margin-bottom: 24px;">
-                <h3 class="downloads-section-title" style="margin-bottom: 14px;"><span>📁</span> 1. Audio y Carátula</h3>
-
-                <!-- Botón importar de Suno -->
-                <button id="vm-btn-use-suno" style="
-                  width:100%; margin-bottom:14px;
-                  background:linear-gradient(135deg,rgba(0,206,201,0.15),rgba(108,92,231,0.18));
-                  border:1.5px solid rgba(0,206,201,0.4); border-radius:var(--radius-md);
-                  padding:14px 18px; display:flex; align-items:center; gap:12px;
-                  cursor:pointer; text-align:left; transition:all .2s ease; color:var(--text-main);">
-                  <span style="font-size:26px;">⚡</span>
-                  <div>
-                    <div style="font-family:var(--font-title);font-size:14px;font-weight:700;">Usar canción y carátula cargada en SunoWave</div>
-                    <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Importa automáticamente el audio descifrado y la portada HD</div>
-                  </div>
-                </button>
-
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                  <!-- Subir Carátula -->
-                  <label style="display:block; cursor:pointer;">
-                    <div style="border: 1.5px dashed rgba(0,206,201,0.4); border-radius: var(--radius-md); background: var(--bg-elevated); padding: 18px 12px; text-align: center; transition: all .2s ease;">
-                      <div style="font-size: 26px; margin-bottom: 4px;">🖼️</div>
-                      <div style="font-weight: 700; font-size: 13px; color: #fff;">Subir Carátula</div>
-                      <div id="vm-cover-label" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">PNG, JPG, WebP</div>
-                    </div>
-                    <input type="file" id="vm-cover-input" accept="image/*" style="display:none;">
-                  </label>
-
-                  <!-- Subir Audio -->
-                  <label style="display:block; cursor:pointer;">
-                    <div style="border: 1.5px dashed rgba(108,92,231,0.4); border-radius: var(--radius-md); background: var(--bg-elevated); padding: 18px 12px; text-align: center; transition: all .2s ease;">
-                      <div style="font-size: 26px; margin-bottom: 4px;">🎶</div>
-                      <div style="font-weight: 700; font-size: 13px; color: #fff;">Subir Audio</div>
-                      <div id="vm-audio-label" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">MP3, WAV, M4A</div>
-                    </div>
-                    <input type="file" id="vm-audio-input" accept="audio/*" style="display:none;">
-                  </label>
-                </div>
-              </div>
-
-              <!-- 2. Formato de Pantalla (Aspect Ratio) -->
-              <div style="margin-bottom: 24px;">
-                <h3 class="downloads-section-title" style="margin-bottom: 12px;"><span>📐</span> 2. Formato de Pantalla</h3>
-                <div class="aspect-ratio-selector">
-                  <button class="aspect-btn active" data-ratio="vertical" type="button">
-                    <div class="aspect-icon-box">
-                      <div class="aspect-icon-vertical" style="background:var(--neon-cyan); border-radius:2px;"></div>
-                    </div>
-                    <div style="font-weight:700; font-size:13px;">9:16 Vertical</div>
-                    <div style="font-size:11px; opacity:.7;">TikTok · Reels · Shorts</div>
-                  </button>
-
-                  <button class="aspect-btn" data-ratio="square" type="button">
-                    <div class="aspect-icon-box">
-                      <div class="aspect-icon-square" style="background:var(--neon-purple); border-radius:3px;"></div>
-                    </div>
-                    <div style="font-weight:700; font-size:13px;">1:1 Cuadrado</div>
-                    <div style="font-size:11px; opacity:.7;">Instagram · Feed</div>
-                  </button>
-
-                  <button class="aspect-btn" data-ratio="horizontal" type="button">
-                    <div class="aspect-icon-box">
-                      <div class="aspect-icon-horizontal" style="background:var(--neon-pink); border-radius:2px;"></div>
-                    </div>
-                    <div style="font-weight:700; font-size:13px;">16:9 Horizontal</div>
-                    <div style="font-size:11px; opacity:.7;">YouTube · Desktop</div>
-                  </button>
-                </div>
-              </div>
-
-              <!-- 3. Efectos Visuales & Estilo -->
-              <div style="margin-bottom: 24px;">
-                <h3 class="downloads-section-title" style="margin-bottom: 12px;"><span>🎨</span> 3. Estilo del Visualizador</h3>
-                <div class="vm-theme-selector">
-                  <button class="vm-theme-btn active" data-theme="neon-wave" type="button">
-                    <span>🌊</span> Ondas Neón
-                  </button>
-                  <button class="vm-theme-btn" data-theme="circular-pulse" type="button">
-                    <span>💫</span> Espectro Circular
-                  </button>
-                  <button class="vm-theme-btn" data-theme="vinyl-spin" type="button">
-                    <span>💿</span> Disco Vinilo
-                  </button>
-                </div>
-              </div>
-
-              <!-- 4. Textos en Video -->
-              <div style="margin-bottom: 24px;">
-                <h3 class="downloads-section-title" style="margin-bottom: 12px;"><span>✍️</span> 4. Textos del Video</h3>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                  <div>
-                    <label style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; display:block; margin-bottom:4px;">Título de la Canción:</label>
-                    <input type="text" id="vm-title-input" class="search-input" value="Mi Canción Suno" style="height:42px; font-size:13px;">
-                  </div>
-                  <div>
-                    <label style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; display:block; margin-bottom:4px;">Artista o Firma:</label>
-                    <input type="text" id="vm-artist-input" class="search-input" value="by ORFEX" style="height:42px; font-size:13px;">
-                  </div>
-                </div>
-              </div>
-
-              <!-- 5. Duración del Video -->
-              <div style="margin-bottom: 24px;">
-                <h3 class="downloads-section-title" style="margin-bottom: 12px;"><span>⏱️</span> 5. Duración del Video</h3>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                  <button class="trimmer-preset-btn vm-dur-btn" data-duration="15" type="button">⚡ 15 segundos</button>
-                  <button class="trimmer-preset-btn vm-dur-btn active" data-duration="30" type="button">🎵 30 segundos</button>
-                  <button class="trimmer-preset-btn vm-dur-btn" data-duration="60" type="button">⏱️ 60 segundos</button>
-                  <button class="trimmer-preset-btn vm-dur-btn" data-duration="full" type="button">♾️ Completo</button>
-                </div>
-              </div>
-
-              <!-- Acciones de Exportación -->
-              <div style="display:flex; gap:12px; margin-top: 10px;">
-                <button id="vm-btn-preview-play" class="btn-paste" style="flex:1; padding:14px; font-weight:700; font-size:14px;" type="button">
-                  <span>▶️</span> Previsualizar Video
-                </button>
-                <button id="vm-btn-export-video" class="btn-submit" style="flex:1.4; padding:14px; font-weight:700; font-size:14px;" type="button">
-                  <span>💾</span> Exportar Video MP4/WebM
-                </button>
-              </div>
-
-              <!-- Progreso de Grabación -->
-              <div id="vm-record-progress-wrap" style="margin-top:16px; display:none;">
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                  <span id="vm-record-progress-msg" style="color:var(--neon-cyan);">Renderizando video...</span>
-                  <span style="color:var(--text-muted);">Calidad HD</span>
-                </div>
-                <div style="height:6px; background:var(--bg-elevated); border-radius:var(--radius-full); overflow:hidden;">
-                  <div id="vm-record-progress-fill" style="height:100%; width:0%; background:var(--grad-primary); transition:width .2s linear; border-radius:var(--radius-full);"></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Columna Derecha: Previsualizador Canvas en Vivo -->
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <span style="font-family:var(--font-title); font-size:14px; font-weight:700; color:var(--text-muted);">
-                  Vista Previa en Vivo
-                </span>
-                <span style="font-size:12px; color:var(--neon-cyan);">60 FPS Canvas HD</span>
-              </div>
-
-              <div class="vm-preview-stage">
-                <div id="vm-canvas-container" class="vm-canvas-container ratio-vertical">
-                  <canvas id="vm-preview-canvas" width="720" height="1280"></canvas>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- MODO B: PROCESAMIENTO POR LOTES (BATCH)    -->
-        <!-- ========================================== -->
-        <div id="vm-panel-batch" style="display:none;">
-          <div style="background:var(--bg-elevated); padding:24px; border-radius:var(--radius-md); border:1px solid var(--border-subtle); margin-bottom: 24px;">
-            <h3 style="font-family:var(--font-title); font-size:18px; margin-bottom:8px; color:#fff;">
-              Subir Múltiples Canciones y Carátulas a la vez
-            </h3>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">
-              Selecciona varios audios a la vez. Si subes 1 sola carátula, se aplicará a todas las canciones. Si subes varias carátulas, se emparejarán automáticamente en orden.
-            </p>
-
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom: 20px;">
-              <!-- Input múltiple audios -->
-              <div style="border:2px dashed rgba(108,92,231,0.4); border-radius:var(--radius-md); padding:20px; text-align:center; background:rgba(10,14,26,0.6);">
-                <div style="font-size:32px; margin-bottom:6px;">📁🎵</div>
-                <div style="font-weight:700; font-size:14px; color:#fff; margin-bottom:4px;">1. Seleccionar Canciones (Múltiples)</div>
-                <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Puedes seleccionar 2, 5, 10 o más archivos MP3/WAV</div>
-                <input type="file" id="vm-batch-audios-input" accept="audio/*" multiple style="display:none;">
-                <label for="vm-batch-audios-input" class="btn-paste" style="display:inline-block; cursor:pointer; font-size:12px; padding:8px 16px;">
-                  📂 Examinar Audios
-                </label>
-                <div id="vm-batch-audios-count" style="font-size:11px; color:var(--neon-purple); margin-top:8px;"></div>
-              </div>
-
-              <!-- Input múltiple carátulas -->
-              <div style="border:2px dashed rgba(0,206,201,0.4); border-radius:var(--radius-md); padding:20px; text-align:center; background:rgba(10,14,26,0.6);">
-                <div style="font-size:32px; margin-bottom:6px;">📁🖼️</div>
-                <div style="font-weight:700; font-size:14px; color:#fff; margin-bottom:4px;">2. Seleccionar Carátula(s)</div>
-                <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Sube 1 carátula general o varias para cada canción</div>
-                <input type="file" id="vm-batch-covers-input" accept="image/*" multiple style="display:none;">
-                <label for="vm-batch-covers-input" class="btn-paste" style="display:inline-block; cursor:pointer; font-size:12px; padding:8px 16px;">
-                  📂 Examinar Imágenes
-                </label>
-                <div id="vm-batch-covers-count" style="font-size:11px; color:var(--neon-cyan); margin-top:8px;"></div>
-              </div>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-              <button id="vm-btn-add-batch" class="btn-submit" type="button" style="padding:12px 24px; font-size:14px;">
-                <span>➕</span> Añadir a la Cola de Videos
-              </button>
-              <div style="display:flex; gap:10px;">
-                <button id="vm-btn-start-batch" class="btn-submit" style="background:linear-gradient(135deg, #00cec9, #0984e3); padding:12px 24px; font-size:14px;" type="button">
-                  <span>🚀</span> Procesar Todos los Lotes
-                </button>
-                <button id="vm-btn-clear-batch" class="btn-paste" type="button" style="padding:12px 18px; font-size:13px;">
-                  🗑️ Limpiar Cola
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tabla de Cola por Lotes -->
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-              <h4 style="font-family:var(--font-title); font-size:16px; margin:0; color:#fff;">
-                Cola de Videos a Generar (<span id="vm-batch-count">0 videos</span>)
-              </h4>
-            </div>
-
-            <div style="overflow-x:auto; background:var(--bg-elevated); border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
-              <table class="batch-videos-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Canción & Información</th>
-                    <th>Estado</th>
-                    <th style="text-align:right;">Descarga</th>
-                  </tr>
-                </thead>
-                <tbody id="vm-batch-tbody">
-                  <!-- Filas dinámicas -->
-                </tbody>
-              </table>
-              <div id="vm-batch-empty" style="text-align:center; padding:36px; color:var(--text-muted); font-size:13px;">
-                Aún no has añadido canciones a la cola por lotes. Selecciona tus archivos arriba.
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
 
     <!-- AdSense Slot In-Content -->
     <div class="adsense-slot-wrapper">
@@ -1000,9 +597,9 @@
           </article>
 
           <article class="editorial-article">
-            <h3>🎬 3. Video Marketing para Músicos en Redes Sociales</h3>
+            <h3>✂️ 3. Edición de Stems y Muestras Comerciales</h3>
             <p>
-              La música con IA adquiere viralidad en plataformas audiovisuales de formato vertical (TikTok, Instagram Reels, YouTube Shorts). Con nuestro <strong>Creador de Mini Videos</strong> integrado, puedes sincronizar en menos de 5 segundos tu carátula cuadrada con ondas de espectro analógico y barras de progreso elegantes a 1080x1920 (9:16) o 1080x1080 (1:1), exportando clips listos para publicar sin requerir programas pesados de edición como Premiere o After Effects.
+              Para proteger tus pistas antes de compartirlas o enviarlas a clientes, nuestro <strong>Cortador de Audio</strong> te permite aislar fragmentos clave (15s, 30s o personalizados) e incorporar marcas de agua sonoras y carátulas con sello de muestra de forma 100% local en tu dispositivo.
             </p>
           </article>
         </div>
@@ -1030,7 +627,7 @@
                 <span class="faq-arrow">▾</span>
               </summary>
               <div class="faq-answer">
-                Por dos razones fundamentales: <strong>Privacidad absoluta</strong> y <strong>Velocidad instantánea</strong>. Al utilizar la tecnología Web Audio API y WebAssembly (LameJS / MediaRecorder), no necesitas subir tus archivos a servidores desconocidos ni esperar filas de procesamiento en la nube. Tus stems y pistas nunca salen de tu dispositivo.
+                Por dos razones fundamentales: <strong>Privacidad absoluta</strong> y <strong>Velocidad instantánea</strong>. Al utilizar la tecnología Web Audio API y WebAssembly (LameJS), no necesitas subir tus archivos a servidores desconocidos ni esperar filas de procesamiento en la nube. Tus stems y pistas nunca salen de tu dispositivo.
               </div>
             </details>
 
@@ -1040,17 +637,17 @@
                 <span class="faq-arrow">▾</span>
               </summary>
               <div class="faq-answer">
-                Sí, absolutamente. Todas las herramientas del estudio (descarga y descifrado v5.5 DRM "Mango", transcodificación a MP3 320k y WAV PCM 16-bit, creador de mini videos en lote y transcriptor IA) son <strong>100% gratuitas y sin límites de uso</strong>. La plataforma se financia íntegramente mediante publicidad contextual de Google AdSense.
+                Sí, absolutamente. Todas las herramientas del estudio (descarga y descifrado v5.5 DRM "Mango", transcodificación a MP3 320k y WAV PCM 16-bit, y cortador de muestras comerciales) son <strong>100% gratuitas y sin límites de uso</strong>. La plataforma se financia íntegramente mediante publicidad contextual de Google AdSense.
               </div>
             </details>
 
             <details class="faq-item">
               <summary class="faq-question">
-                <span>¿Cómo utilizo el Creador de Mini Videos por lotes?</span>
+                <span>¿Cómo utilizar el Cortador de Audio y Generador de Muestras?</span>
                 <span class="faq-arrow">▾</span>
               </summary>
               <div class="faq-answer">
-                Dirígete a la pestaña "Crear Mini Video", activa la opción "Procesamiento por Lotes" y arrastra múltiples archivos MP3 junto con sus respectivas carátulas de portada. Nuestro motor de renderizado acelerado por hardware creará los videos MP4 en serie automáticamente con barras de frecuencia y estilos retro vintage.
+                Dirígete a la pestaña "Cortador & Muestras", selecciona un fragmento de tu canción con los controles deslizantes o presets rápidos (15s, 30s) y añade opcionalmente una marca de agua sonora o un sello visual en la carátula para compartir tus maquetas de forma protegida.
               </div>
             </details>
           </div>
@@ -1080,7 +677,7 @@
       <div class="sv-footer-brand">
         <div class="sv-footer-logo">📻 SUNOWAVE STUDIO</div>
         <p class="sv-footer-tagline">
-          Estación analógica de masterización, descifrado v5.5 DRM ("Mango") y generación de mini videos de alta fidelidad para creadores de música con inteligencia artificial. Artesanía digital <strong>by ORFEX</strong>.
+          Estación analógica de masterización, descifrado v5.5 DRM ("Mango") y procesamiento de audio de alta fidelidad para creadores de música con inteligencia artificial. Artesanía digital <strong>by ORFEX</strong>.
         </p>
       </div>
 
@@ -1100,17 +697,16 @@
           <li><a href="#tab-single">Extractor & Desencriptador</a></li>
           <li><a href="#tab-batch">Descarga por Lotes</a></li>
           <li><a href="#tab-trimmer">Cortador & Sellos de Audio</a></li>
-          <li><a href="#tab-videomaker">Creador de Mini Videos</a></li>
         </ul>
       </div>
 
       <div class="sv-footer-nav-col">
-        <h4>Atención Directa</h4>
+        <h4>Atención & Soporte</h4>
         <p style="color: var(--leather-sand); font-size: 13px; margin-bottom: 12px;">
-          ¿Tienes preguntas, sugerencias o requieres asistencia técnica?
+          ¿Tienes preguntas técnicas, sugerencias o propuestas de patrocinio?
         </p>
-        <a href="https://wa.me/573017509921?text=Hola%20ORFEX,%20necesito%20soporte%20en%20SunoWave" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="font-size: 13px; padding: 10px 14px; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-          💬 WhatsApp +57 301 750 9921
+        <a href="contacto.html" class="btn btn-secondary" style="font-size: 13px; padding: 10px 14px; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+          ✉️ Centro de Contacto
         </a>
       </div>
 
@@ -1164,9 +760,7 @@
   <script src="js/suno-service.js?v=12"></script>
   <script src="js/audio-converter.js?v=12"></script>
   <script src="js/visualizer.js?v=12"></script>
-  <script src="js/transcriber.js?v=12"></script>
   <script src="js/audio-trimmer.js?v=12"></script>
-  <script src="js/video-maker.js?v=12"></script>
   <script src="js/app.js?v=12"></script>
 </body>
 </html>
