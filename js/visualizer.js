@@ -84,29 +84,30 @@ class AudioVisualizer {
         this.peaks[i] = Math.max(0, this.peaks[i] - 1.4);
       }
 
-      // Gradiente de color según energía y frecuencia
+      // Gradiente de color vintage cálido (tubos de vacío / VU meter analógico)
       const grad = ctx.createLinearGradient(0, y, 0, height);
       if (isPlaying && normalized > 0.7) {
-        grad.addColorStop(0, '#FF7675'); // Resplandor en frecuencias altas
-        grad.addColorStop(0.3, '#00CEC9');
-        grad.addColorStop(1, '#6C5CE7');
+        grad.addColorStop(0, '#FFEAA7'); // Resplandor dorado incandescente
+        grad.addColorStop(0.3, '#E59B3C'); // Ámbar cálido de válvula
+        grad.addColorStop(0.7, '#B3541E'); // Cuero tostado
+        grad.addColorStop(1, '#4A220D');   // Caoba oscuro
       } else {
-        grad.addColorStop(0, '#00CEC9'); // Cian neón
-        grad.addColorStop(0.5, '#6C5CE7'); // Violeta neón
-        grad.addColorStop(1, '#A29BFE');
+        grad.addColorStop(0, '#D4AF37');   // Latón vintage dorado
+        grad.addColorStop(0.5, '#9E5E26'); // Cuero saddle
+        grad.addColorStop(1, '#2A160D');   // Fondo sombra cuero
       }
 
       ctx.fillStyle = grad;
-      ctx.shadowBlur = isPlaying ? 12 : 5;
-      ctx.shadowColor = isPlaying ? 'rgba(0, 206, 201, 0.6)' : 'rgba(108, 92, 231, 0.3)';
+      ctx.shadowBlur = isPlaying ? 14 : 6;
+      ctx.shadowColor = isPlaying ? 'rgba(229, 155, 60, 0.65)' : 'rgba(212, 175, 55, 0.35)';
       this.drawRoundedBar(ctx, x, y, barWidth, barHeight, 3);
 
-      // Indicador de pico blanco en la parte superior
+      // Indicador de pico analógico en la parte superior
       if (isPlaying && this.peaks[i] > 6) {
         const peakY = height - this.peaks[i] - 2;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.shadowBlur = 4;
-        ctx.shadowColor = '#FFFFFF';
+        ctx.fillStyle = '#FFF8E7';
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = '#FFEAA7';
         ctx.fillRect(x, Math.max(0, peakY), barWidth, 2);
       }
     }
