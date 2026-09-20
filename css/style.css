@@ -139,8 +139,8 @@ body::before {
   align-items: center;
   padding: 16px 26px;
   background: var(--grad-leather);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border: 1px solid var(--border-stitch);
   border-radius: var(--radius-lg);
   margin-bottom: 28px;
