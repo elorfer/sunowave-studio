@@ -75,7 +75,7 @@ const SunoService = {
       return this._decryptedBlobs.get(uuid);
     }
 
-    onProgress('Solicitando credenciales seguras a Suno (DRM Mango)...');
+    onProgress('Conectando con el stream de audio de alta fidelidad...');
     
     // 1. Obtener derechos de licencia
     let rights;
