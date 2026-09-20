@@ -346,7 +346,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. Descargar MP3 (Universal 320kbps - Compatible con Windows Media Player)
   btnDlMp3.addEventListener('click', async () => {
     if (!currentSong) return;
-    showToast('Generando y descargando MP3 a 320 kbps...', 'info');
     progMp3.style.width = '15%';
 
     try {
@@ -358,9 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mediaUrl = (currentSong.audioUrl && !currentSong.audioUrl.includes('forbidden')) 
           ? currentSong.audioUrl 
           : `https://d2lwuy8qc234o3.cloudfront.net/1/clip/${currentSong.id}.m4a`;
-        audioSource = await SunoService.decryptMangoAudio(currentSong.id, mediaUrl, (msg) => {
-          showToast(msg, 'info');
-        });
+        audioSource = await SunoService.decryptMangoAudio(currentSong.id, mediaUrl);
         currentSong.decryptedBlob = audioSource;
         currentSong.decryptedBlobUrl = URL.createObjectURL(audioSource);
       }
@@ -372,7 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!audioSource && isLocal && currentSong.videoUrl) {
         const url = `/api/download?format=mp3&url=${encodeURIComponent(currentSong.videoUrl)}&title=${encodeURIComponent(currentSong.title)}`;
         triggerFileDownload(url, `${currentSong.title} - Suno (320kbps).mp3`);
-        showToast('¡Descarga de MP3 iniciada!', 'success');
       } else {
         await AudioDownloader.convertAndDownload(
           audioSource || currentSong.videoUrl || currentSong.audioUrl,
@@ -380,7 +376,6 @@ document.addEventListener('DOMContentLoaded', () => {
           'mp3',
           (pct) => { progMp3.style.width = `${pct}%`; }
         );
-        showToast('¡Audio MP3 descargado en 320kbps!', 'success');
       }
     } catch (e) {
       showToast('Error al procesar MP3: ' + e.message, 'error');
@@ -396,7 +391,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnDlWav.addEventListener('click', async () => {
     if (!currentSong) return;
-    showToast('Convirtiendo a WAV sin pérdida... (puede tardar unos segundos)', 'info');
     progWav.style.width = '15%';
 
     try {
@@ -408,9 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mediaUrl = (currentSong.audioUrl && !currentSong.audioUrl.includes('forbidden')) 
           ? currentSong.audioUrl 
           : `https://d2lwuy8qc234o3.cloudfront.net/1/clip/${currentSong.id}.m4a`;
-        audioSource = await SunoService.decryptMangoAudio(currentSong.id, mediaUrl, (msg) => {
-          showToast(msg, 'info');
-        });
+        audioSource = await SunoService.decryptMangoAudio(currentSong.id, mediaUrl);
         currentSong.decryptedBlob = audioSource;
         currentSong.decryptedBlobUrl = URL.createObjectURL(audioSource);
       }
@@ -419,12 +411,10 @@ document.addEventListener('DOMContentLoaded', () => {
         audioSource || currentSong.videoUrl || currentSong.audioUrl,
         currentSong.title,
         'wav',
-        (pct, msg) => {
+        (pct) => {
           progWav.style.width = `${pct}%`;
-          if (msg) showToast(msg, 'info');
         }
       );
-      showToast('¡WAV lossless descargado con éxito!', 'success');
     } catch (e) {
       showToast('Error al generar WAV: ' + e.message, 'error');
     } finally {
@@ -436,7 +426,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // 2. Descargar Audio AAC / M4A (100% compatible con cabecera ftyp)
   btnDlM4a.addEventListener('click', async () => {
     if (!currentSong) return;
-    showToast('Descargando audio AAC/M4A de estudio...', 'info');
     progM4a.style.width = '20%';
 
     try {
@@ -446,9 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mediaUrl = (currentSong.audioUrl && !currentSong.audioUrl.includes('forbidden')) 
           ? currentSong.audioUrl 
           : `https://d2lwuy8qc234o3.cloudfront.net/1/clip/${currentSong.id}.m4a`;
-        audioBlob = await SunoService.decryptMangoAudio(currentSong.id, mediaUrl, (msg) => {
-          showToast(msg, 'info');
-        });
+        audioBlob = await SunoService.decryptMangoAudio(currentSong.id, mediaUrl);
         currentSong.decryptedBlob = audioBlob;
         currentSong.decryptedBlobUrl = URL.createObjectURL(audioBlob);
       }
@@ -457,7 +444,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const filename = AudioDownloader.sanitizeFilename(`${currentSong.title} - Suno (AAC)`, 'm4a');
         AudioDownloader.triggerBrowserDownload(audioBlob, filename);
         progM4a.style.width = '100%';
-        showToast('¡Audio M4A descargado con éxito!', 'success');
       } else {
         const isLocal = window.location.hostname === 'localhost' || 
                         window.location.hostname === '127.0.0.1' || 
@@ -483,10 +469,9 @@ document.addEventListener('DOMContentLoaded', () => {
   btnDlMp4.addEventListener('click', async () => {
     if (!currentSong) return;
     if (!currentSong.videoUrl) {
-      showToast('Esta pista no cuenta con video oficial (pista v5.5 de audio directo)', 'warning');
+      showToast('Esta pista no cuenta con video oficial', 'warning');
       return;
     }
-    showToast('Descargando video oficial MP4...', 'info');
     progMp4.style.width = '100%';
 
     const isLocal = window.location.hostname === 'localhost' || 
@@ -509,7 +494,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // 4. Descargar Portada HD
   btnDlArt.addEventListener('click', async () => {
     if (!currentSong || !currentSong.imageUrl) return;
-    showToast('Descargando portada en alta resolución...', 'info');
     const filename = AudioDownloader.sanitizeFilename(`${currentSong.title} - Cover`, 'jpg');
     AudioDownloader.downloadBlob(currentSong.imageUrl, filename);
   });
@@ -696,7 +680,6 @@ document.addEventListener('DOMContentLoaded', () => {
           const url = btn.getAttribute('data-url');
           const title = btn.getAttribute('data-title');
           window.downloadBatchSong(url, title);
-          showToast('Iniciando descarga desde historial', 'info');
         });
       });
     } catch (e) {
