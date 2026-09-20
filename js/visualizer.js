@@ -1,6 +1,6 @@
 /**
- * SunoWave - Audio Visualizer Studio
- * Visualizador de espectro sonoro neón ultra-fluido y reactivo a la reproducción
+ * SunoWave - Audio Visualizer Studio (Ultra-Performant Vintage VU Meter)
+ * Visualizador de espectro analógico vintage optimizado para alto rendimiento (60fps sin carga GPU/CPU)
  */
 
 class AudioVisualizer {
@@ -10,30 +10,56 @@ class AudioVisualizer {
     this.ctx = this.canvas.getContext('2d');
     this.audio = audioElement;
     this.animationId = null;
+    this.running = false;
     this.peaks = new Array(48).fill(0);
     this.tick = 0;
 
     this.resize();
     window.addEventListener('resize', () => this.resize());
-    this.startLoop();
+
+    if (this.audio) {
+      this.audio.addEventListener('play', () => this.startLoop());
+      this.audio.addEventListener('pause', () => this.pauseLoop());
+      this.audio.addEventListener('ended', () => this.pauseLoop());
+    }
+
+    // Renderizar marco estático inicial de reposo
+    this.draw();
   }
 
   resize() {
-    if (!this.canvas) return;
+    if (!this.canvas || !this.canvas.parentElement) return;
     const rect = this.canvas.parentElement.getBoundingClientRect();
-    this.canvas.width = rect.width * (window.devicePixelRatio || 1);
-    this.canvas.height = 130 * (window.devicePixelRatio || 1);
-    this.ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+    if (rect.width === 0) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.canvas.width = rect.width * dpr;
+    this.canvas.height = 130 * dpr;
+    this.ctx.scale(dpr, dpr);
     this.width = rect.width;
     this.height = 130;
+    if (!this.running) {
+      this.draw();
+    }
   }
 
   startLoop() {
+    if (this.running) return;
+    this.running = true;
     const render = () => {
+      if (!this.running) return;
       this.draw();
       this.animationId = requestAnimationFrame(render);
     };
     render();
+  }
+
+  pauseLoop() {
+    this.running = false;
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+    this.draw();
   }
 
   draw() {
@@ -48,15 +74,13 @@ class AudioVisualizer {
     const totalSpacing = spacing * (barCount - 1);
     const barWidth = Math.max(3, (width - totalSpacing) / barCount);
 
-    this.tick += isPlaying ? 0.08 : 0.025;
+    this.tick += isPlaying ? 0.08 : 0.02;
 
-    // Generador armónico reactivo que responde al ritmo y volumen
     for (let i = 0; i < barCount; i++) {
       const x = i * (barWidth + spacing);
       
       let normalized = 0.08;
       if (isPlaying) {
-        // Simulación de espectro por bandas de frecuencia (graves, medios, agudos)
         const bassFactor = Math.exp(-i / 8) * 1.4;
         const midFactor = Math.sin((i / barCount) * Math.PI) * 0.9;
         const trebleFactor = (i / barCount) * 0.7;
@@ -70,44 +94,39 @@ class AudioVisualizer {
           Math.max(0.1, (wave * 0.5 + jitter + beatPulse) * (bassFactor + midFactor + trebleFactor * 0.5))
         );
       } else {
-        // Animación suave de reposo/ambient
-        normalized = (Math.sin(i * 0.16 + this.tick) * 0.5 + 0.5) * 0.18 + 0.05;
+        // En reposo: líneas sutiles y elegantes sin consumo de recursos
+        normalized = (Math.sin(i * 0.2 + this.tick) * 0.5 + 0.5) * 0.12 + 0.05;
       }
 
       const barHeight = Math.max(4, normalized * (height * 0.88));
       const y = height - barHeight;
 
-      // Caída suave de los picos superiores
       if (barHeight > this.peaks[i]) {
         this.peaks[i] = barHeight;
       } else {
-        this.peaks[i] = Math.max(0, this.peaks[i] - 1.4);
+        this.peaks[i] = Math.max(0, this.peaks[i] - 1.2);
       }
 
-      // Gradiente de color vintage cálido (tubos de vacío / VU meter analógico)
+      // Gradiente cálido vintage analógico
       const grad = ctx.createLinearGradient(0, y, 0, height);
-      if (isPlaying && normalized > 0.7) {
-        grad.addColorStop(0, '#FFEAA7'); // Resplandor dorado incandescente
-        grad.addColorStop(0.3, '#E59B3C'); // Ámbar cálido de válvula
-        grad.addColorStop(0.7, '#B3541E'); // Cuero tostado
-        grad.addColorStop(1, '#4A220D');   // Caoba oscuro
+      if (isPlaying && normalized > 0.65) {
+        grad.addColorStop(0, '#FFEAA7');
+        grad.addColorStop(0.3, '#E59B3C');
+        grad.addColorStop(0.7, '#B3541E');
+        grad.addColorStop(1, '#4A220D');
       } else {
-        grad.addColorStop(0, '#D4AF37');   // Latón vintage dorado
-        grad.addColorStop(0.5, '#9E5E26'); // Cuero saddle
-        grad.addColorStop(1, '#2A160D');   // Fondo sombra cuero
+        grad.addColorStop(0, '#D4AF37');
+        grad.addColorStop(0.5, '#9E5E26');
+        grad.addColorStop(1, '#2A160D');
       }
 
       ctx.fillStyle = grad;
-      ctx.shadowBlur = isPlaying ? 14 : 6;
-      ctx.shadowColor = isPlaying ? 'rgba(229, 155, 60, 0.65)' : 'rgba(212, 175, 55, 0.35)';
       this.drawRoundedBar(ctx, x, y, barWidth, barHeight, 3);
 
-      // Indicador de pico analógico en la parte superior
+      // Pico analógico brillante (sin sombras blur pesadas)
       if (isPlaying && this.peaks[i] > 6) {
         const peakY = height - this.peaks[i] - 2;
-        ctx.fillStyle = '#FFF8E7';
-        ctx.shadowBlur = 5;
-        ctx.shadowColor = '#FFEAA7';
+        ctx.fillStyle = '#FFEAA7';
         ctx.fillRect(x, Math.max(0, peakY), barWidth, 2);
       }
     }
@@ -128,8 +147,10 @@ class AudioVisualizer {
   }
 
   destroy() {
+    this.running = false;
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
+      this.animationId = null;
     }
   }
 }
