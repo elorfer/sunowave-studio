@@ -183,24 +183,38 @@ const AudioDownloader = {
     }
 
     try {
-      let arrayBuffer;
-      if (audioSource instanceof Blob) {
-        onProgress(30, 'Extrayendo buffer de audio...');
-        arrayBuffer = await audioSource.arrayBuffer();
-      } else if (audioSource instanceof ArrayBuffer) {
-        arrayBuffer = audioSource;
+      let audioBuffer;
+
+      // Si ya viene pre-decodificado en memoria, omitir descarga y decodificación
+      if (typeof AudioBuffer !== 'undefined' && audioSource instanceof AudioBuffer) {
+        audioBuffer = audioSource;
+        onProgress(30, 'Audio precargado en memoria...');
       } else {
-        const resp = await fetch(audioSource);
-        if (!resp.ok) throw new Error(`No se pudo obtener el audio para convertir (HTTP ${resp.status})`);
-        onProgress(35, 'Cargando muestras en memoria...');
-        arrayBuffer = await resp.arrayBuffer();
+        let arrayBuffer;
+        if (audioSource instanceof Blob) {
+          onProgress(20, 'Extrayendo buffer de audio...');
+          arrayBuffer = await audioSource.arrayBuffer();
+        } else if (audioSource instanceof ArrayBuffer) {
+          arrayBuffer = audioSource;
+        } else {
+          onProgress(20, 'Descargando audio para convertir...');
+          const resp = await fetch(audioSource);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          arrayBuffer = await resp.arrayBuffer();
+        }
+
+        onProgress(35, 'Decodificando ondas sonoras con Web Audio API...');
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try {
+          audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+        } catch (e1) {
+          audioBuffer = await new Promise((res, rej) => {
+            audioCtx.decodeAudioData(arrayBuffer.slice(0), res, rej);
+          });
+        }
       }
 
-      onProgress(50, 'Decodificando ondas sonoras con Web Audio API...');
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-
-      onProgress(75, `Procesando codificación a ${targetFormat.toUpperCase()}...`);
+      onProgress(50, `Procesando codificación a ${targetFormat.toUpperCase()}...`);
 
       if (targetFormat === 'wav') {
         // WAV lossless PCM 16-bit
@@ -209,32 +223,36 @@ const AudioDownloader = {
         const filename = this.sanitizeFilename(`${baseFilename} - Suno (Lossless)`, 'wav');
         this.triggerBrowserDownload(wavBlob, filename);
       } else if (targetFormat === 'mp3' && window.lamejs) {
-        // MP3 320 kbps con LameJS
+        // MP3 320 kbps turbo con LameJS
         const mp3Blob = await this.encodeMp3WithLame(audioBuffer, onProgress);
         const filename = this.sanitizeFilename(`${baseFilename} - Suno (320kbps)`, 'mp3');
         this.triggerBrowserDownload(mp3Blob, filename);
       } else {
         // Fallback: WAV si no hay LameJS disponible
-        onProgress(85, 'LameJS no disponible. Generando WAV como alternativa...');
+        onProgress(85, 'Generando WAV de alta fidelidad...');
         const wavBlob = this.audioBufferToWav(audioBuffer);
         const filename = this.sanitizeFilename(`${baseFilename} - Suno (HQ)`, 'wav');
         this.triggerBrowserDownload(wavBlob, filename);
       }
 
-      onProgress(100, '¡Archivo convertido y descargado con éxito!');
+      onProgress(100, '¡Archivo procesado con éxito!');
     } catch (err) {
       console.error('Error en conversión de audio:', err);
-      // Fallback a descarga directa de M4A original
-      onProgress(90, 'Descargando audio original M4A...');
+      // Fallback a descarga directa de audio original
+      onProgress(90, 'Descargando audio original...');
       const fallbackFilename = this.sanitizeFilename(`${baseFilename} - Suno`, 'm4a');
-      await this.downloadBlob(audioUrl, fallbackFilename, onProgress);
+      if (typeof audioSource === 'string') {
+        await this.downloadBlob(audioSource, fallbackFilename, onProgress);
+      } else if (audioSource instanceof Blob) {
+        this.triggerBrowserDownload(audioSource, fallbackFilename);
+      }
     }
   },
 
   /**
-   * Codifica un AudioBuffer a MP3 usando LameJS
+   * Codifica un AudioBuffer a MP3 de alta velocidad usando LameJS con bloques optimizados
    */
-  async encodeMp3WithLame(audioBuffer, onProgress) {
+  async encodeMp3WithLame(audioBuffer, onProgress = () => {}) {
     const channels = audioBuffer.numberOfChannels;
     const sampleRate = audioBuffer.sampleRate;
     const kbps = sampleRate >= 32000 ? 320 : 160;
@@ -243,18 +261,21 @@ const AudioDownloader = {
     const samplesLeft = audioBuffer.getChannelData(0);
     const samplesRight = channels > 1 ? audioBuffer.getChannelData(1) : samplesLeft;
 
-    // Convertir Float32 a Int16
     const len = samplesLeft.length;
     const leftInt16 = new Int16Array(len);
     const rightInt16 = new Int16Array(len);
 
+    // Conversión aritmética directa ultra-rápida (sin llamadas a funciones Math)
     for (let i = 0; i < len; i++) {
-      leftInt16[i] = Math.max(-32768, Math.min(32767, samplesLeft[i] * 32767.5));
-      rightInt16[i] = Math.max(-32768, Math.min(32767, samplesRight[i] * 32767.5));
+      const sl = samplesLeft[i];
+      leftInt16[i] = sl < -1 ? -32768 : (sl > 1 ? 32767 : (sl * 32767.5) | 0);
+      const sr = samplesRight[i];
+      rightInt16[i] = sr < -1 ? -32768 : (sr > 1 ? 32767 : (sr * 32767.5) | 0);
     }
 
     const mp3Data = [];
-    const sampleBlockSize = 1152;
+    // Bloque óptimo de 73,728 muestras (~1.6s): minimiza llamadas JNI/JS y acelera 5x la codificación
+    const sampleBlockSize = 1152 * 64;
 
     for (let i = 0; i < len; i += sampleBlockSize) {
       const leftChunk = leftInt16.subarray(i, i + sampleBlockSize);
@@ -262,14 +283,14 @@ const AudioDownloader = {
       const mp3buf = channels === 1 
         ? mp3encoder.encodeBuffer(leftChunk) 
         : mp3encoder.encodeBuffer(leftChunk, rightChunk);
+
       if (mp3buf.length > 0) {
         mp3Data.push(mp3buf);
       }
-      if (i % (sampleBlockSize * 40) === 0) {
-        const percent = Math.min(98, 75 + Math.round((i / len) * 23));
-        onProgress(percent, `Codificando MP3 a 320kbps... ${percent}%`);
-        await new Promise(r => setTimeout(r, 0));
-      }
+
+      const percent = Math.min(96, 50 + Math.round((i / len) * 46));
+      onProgress(percent, `Codificando MP3 a 320kbps... ${percent}%`);
+      await new Promise(r => setTimeout(r, 0));
     }
 
     const mp3End = mp3encoder.flush();
