@@ -41,11 +41,12 @@ export default async function handler(req, res) {
       res.setHeader('X-Final-Url', response.url);
     }
 
-    const contentType = response.headers.get('content-type') || 'text/plain';
+    const contentType = response.headers.get('content-type') || 'application/octet-stream';
     res.setHeader('Content-Type', contentType);
 
-    const data = await response.text();
-    return res.status(response.status).send(data);
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    return res.status(response.status).send(buffer);
   } catch (error) {
     console.error('Error en proxy Vercel:', error);
     return res.status(502).json({ 
