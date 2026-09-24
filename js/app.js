@@ -1175,12 +1175,20 @@ document.addEventListener('DOMContentLoaded', () => {
       btnDlMp3.disabled   = true;
       btnDlWav.disabled   = true;
       try {
-        let arrayBuf;
-        const isMangoAudio = (currentSong && (currentSong.isMango || currentSong.audioUrl?.includes('cloudfront.net'))) || 
-                             (url && (url.includes('cloudfront.net') || url.includes('forbidden')));
+        let arrayBuf = null;
 
-        if (isMangoAudio && currentSong && currentSong.id) {
-          previewStatus.textContent = 'Descifrando stream seguro de Suno (DRM Mango)...';
+        // 1. Usar blob ya descifrado en memoria si existe
+        if (currentSong && currentSong.decryptedBlob) {
+          previewStatus.textContent = 'Cargando audio desde la memoria local...';
+          arrayBuf = await currentSong.decryptedBlob.arrayBuffer();
+        } else if (currentSong && currentSong.id && SunoService._decryptedBlobs && SunoService._decryptedBlobs.has(currentSong.id)) {
+          previewStatus.textContent = 'Recuperando audio desde la caché local...';
+          const cachedBlob = SunoService._decryptedBlobs.get(currentSong.id);
+          currentSong.decryptedBlob = cachedBlob;
+          currentSong.decryptedBlobUrl = URL.createObjectURL(cachedBlob);
+          arrayBuf = await cachedBlob.arrayBuffer();
+        } else if (currentSong && currentSong.id && (currentSong.isMango || currentSong.audioUrl?.includes('cloudfront.net'))) {
+          previewStatus.textContent = 'Obteniendo stream de audio de Suno...';
           const mediaUrl = (currentSong.audioUrl && !currentSong.audioUrl.includes('forbidden')) 
             ? currentSong.audioUrl 
             : `https://d2lwuy8qc234o3.cloudfront.net/1/clip/${currentSong.id}.m4a`;
@@ -1191,11 +1199,37 @@ document.addEventListener('DOMContentLoaded', () => {
           currentSong.decryptedBlob = decryptedBlob;
           currentSong.decryptedBlobUrl = URL.createObjectURL(decryptedBlob);
           arrayBuf = await decryptedBlob.arrayBuffer();
-        } else {
-          const res = await fetch(url);
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          arrayBuf = await res.arrayBuffer();
         }
+
+        // 2. Si no es un stream cifrado o falló, descargar vía fetch directo o proxy CORS
+        if (!arrayBuf) {
+          const targetUrl = url || (currentSong ? (currentSong.videoUrl || currentSong.audioUrl) : null);
+          if (!targetUrl) throw new Error('No se encontró enlace de audio válido');
+
+          previewStatus.textContent = 'Descargando pista de audio...';
+          try {
+            const res = await fetch(targetUrl);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            arrayBuf = await res.arrayBuffer();
+          } catch (corsErr) {
+            console.warn('Fetch directo falló por CORS, usando proxy:', corsErr);
+            previewStatus.textContent = 'Conectando mediante canal seguro...';
+            // Intento 1: Proxy de la aplicación
+            const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+            try {
+              const pRes = await fetch(proxyUrl);
+              if (!pRes.ok) throw new Error(`Proxy HTTP ${pRes.status}`);
+              arrayBuf = await pRes.arrayBuffer();
+            } catch (pErr) {
+              // Intento 2: Proxy público CORS fallback
+              const pubProxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+              const pubRes = await fetch(pubProxy);
+              if (!pubRes.ok) throw new Error('No se pudo acceder al audio desde los servidores');
+              arrayBuf = await pubRes.arrayBuffer();
+            }
+          }
+        }
+
         await decodeAudioArrayBuffer(arrayBuf, currentSourceInfo ? currentSourceInfo.name : 'Pista');
       } catch (err) {
         console.error('Error al decodificar audio de Suno:', err);
@@ -1207,9 +1241,22 @@ document.addEventListener('DOMContentLoaded', () => {
     async function decodeAudioArrayBuffer(arrayBuf, name) {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       const ctx = new AudioContextClass();
+      if (ctx.state === 'suspended') {
+        try { await ctx.resume(); } catch (e) {}
+      }
+
       try {
         previewStatus.textContent = 'Decodificando ondas de audio...';
-        currentAudioBuffer = await ctx.decodeAudioData(arrayBuf);
+        let audioBuf;
+        try {
+          audioBuf = await ctx.decodeAudioData(arrayBuf.slice(0));
+        } catch (e1) {
+          audioBuf = await new Promise((resolve, reject) => {
+            ctx.decodeAudioData(arrayBuf.slice(0), resolve, reject);
+          });
+        }
+
+        currentAudioBuffer = audioBuf;
         const total = currentAudioBuffer.duration;
         startSlider.max = total;
         endSlider.max = total;
@@ -1301,6 +1348,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       previewAudioCtx = new AudioContextClass();
+      if (previewAudioCtx.state === 'suspended') {
+        try { previewAudioCtx.resume(); } catch (e) {}
+      }
       previewSourceNode = previewAudioCtx.createBufferSource();
       previewSourceNode.buffer = currentAudioBuffer;
       previewSourceNode.connect(previewAudioCtx.destination);
