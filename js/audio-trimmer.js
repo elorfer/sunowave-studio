@@ -24,7 +24,7 @@ const AudioTrimmer = {
     for (let i = 0; i < buffer.numberOfChannels; i++) {
       const channelData = buffer.getChannelData(i);
       const sub = channelData.subarray(startSample, endSample);
-      sliced.copyToChannel(sub, i);
+      sliced.getChannelData(i).set(sub);
     }
     return sliced;
   },
