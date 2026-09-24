@@ -222,6 +222,14 @@ document.addEventListener('DOMContentLoaded', () => {
         coreAudio.load();
         btnPlayToggle.disabled = false;
         btnPlayToggle.title = 'Reproducir / Pausar';
+
+        // Pre-decodificar AudioBuffer en segundo plano para que la descarga MP3/WAV sea instantánea al hacer clic
+        decryptedBlob.arrayBuffer().then(buf => {
+          const actx = new (window.AudioContext || window.webkitAudioContext)();
+          actx.decodeAudioData(buf.slice(0)).then(decoded => {
+            song.cachedAudioBuffer = decoded;
+          }).catch(() => {});
+        }).catch(() => {});
       }).catch(err => {
         console.warn('Error al descifrar para el reproductor:', err);
         btnPlayToggle.disabled = false;
@@ -346,10 +354,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. Descargar MP3 (Universal 320kbps - Compatible con Windows Media Player)
   btnDlMp3.addEventListener('click', async () => {
     if (!currentSong) return;
-    progMp3.style.width = '15%';
+    progMp3.style.width = '20%';
 
     try {
       btnDlMp3.disabled = true;
+
+      // 1. Modo Turbo: Si ya está pre-decodificado en memoria, exportar directamente
+      if (currentSong.cachedAudioBuffer) {
+        progMp3.style.width = '45%';
+        await AudioDownloader.convertAndDownload(
+          currentSong.cachedAudioBuffer,
+          currentSong.title,
+          'mp3',
+          (pct) => { progMp3.style.width = `${pct}%`; }
+        );
+        return;
+      }
 
       let audioSource = currentSong.decryptedBlob;
       if (!audioSource && (currentSong.isMango || currentSong.audioUrl?.includes('cloudfront.net'))) {
@@ -391,10 +411,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnDlWav.addEventListener('click', async () => {
     if (!currentSong) return;
-    progWav.style.width = '15%';
+    progWav.style.width = '20%';
 
     try {
       btnDlWav.disabled = true;
+
+      // Modo Turbo: Exportar directamente desde buffer predecodificado
+      if (currentSong.cachedAudioBuffer) {
+        progWav.style.width = '50%';
+        await AudioDownloader.convertAndDownload(
+          currentSong.cachedAudioBuffer,
+          currentSong.title,
+          'wav',
+          (pct) => { progWav.style.width = `${pct}%`; }
+        );
+        return;
+      }
 
       let audioSource = currentSong.decryptedBlob;
       if (!audioSource && (currentSong.isMango || currentSong.audioUrl?.includes('cloudfront.net'))) {
