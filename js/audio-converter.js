@@ -237,7 +237,8 @@ const AudioDownloader = {
   async encodeMp3WithLame(audioBuffer, onProgress) {
     const channels = audioBuffer.numberOfChannels;
     const sampleRate = audioBuffer.sampleRate;
-    const mp3encoder = new window.lamejs.Mp3Encoder(channels, sampleRate, 320); // 320 kbps
+    const kbps = sampleRate >= 32000 ? 320 : 160;
+    const mp3encoder = new window.lamejs.Mp3Encoder(channels, sampleRate, kbps);
 
     const samplesLeft = audioBuffer.getChannelData(0);
     const samplesRight = channels > 1 ? audioBuffer.getChannelData(1) : samplesLeft;
@@ -258,7 +259,9 @@ const AudioDownloader = {
     for (let i = 0; i < len; i += sampleBlockSize) {
       const leftChunk = leftInt16.subarray(i, i + sampleBlockSize);
       const rightChunk = rightInt16.subarray(i, i + sampleBlockSize);
-      const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+      const mp3buf = channels === 1 
+        ? mp3encoder.encodeBuffer(leftChunk) 
+        : mp3encoder.encodeBuffer(leftChunk, rightChunk);
       if (mp3buf.length > 0) {
         mp3Data.push(mp3buf);
       }
