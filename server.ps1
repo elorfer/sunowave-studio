@@ -205,6 +205,94 @@ while ($Listener.IsListening) {
         }
 
         # ======================================================================
+        # Endpoint de Creación Ultra-Rápida de Video (Carátula + Audio con FFmpeg)
+        # ======================================================================
+        if ($RawPath -eq "/api/create-video") {
+            try {
+                $reader = New-Object System.IO.StreamReader($Request.InputStream, [System.Text.Encoding]::UTF8)
+                $jsonBody = $reader.ReadToEnd()
+                $reqData = $jsonBody | ConvertFrom-Json
+
+                $title = if ($reqData.title) { $reqData.title } else { "Suno_Video" }
+                $safeTitle = [System.Text.RegularExpressions.Regex]::Replace($title, '[\\/:*?"<>|]', '_').Trim()
+                if ($safeTitle.Length -gt 60) { $safeTitle = $safeTitle.Substring(0, 60) }
+                $ratio = if ($reqData.ratio) { $reqData.ratio } else { "vertical" }
+
+                # Filtro de escala según formato (9:16 vertical, 1:1 cuadrado, 16:9 horizontal)
+                $vf = "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black"
+                if ($ratio -eq "square") {
+                    $vf = "scale=720:720:force_original_aspect_ratio=decrease,pad=720:720:(ow-iw)/2:(oh-ih)/2:color=black"
+                } elseif ($ratio -eq "horizontal") {
+                    $vf = "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:color=black"
+                }
+
+                $tempDir = [System.IO.Path]::GetTempPath()
+                $randId = [System.Guid]::NewGuid().ToString("N").Substring(0, 8)
+                $tempImg = Join-Path $tempDir "suno_img_$randId.jpg"
+                $tempAudio = Join-Path $tempDir "suno_aud_$randId.mp3"
+                $tempVideo = Join-Path $tempDir "suno_vid_$randId.mp4"
+
+                # Guardar imagen temporal
+                if ($reqData.coverBase64) {
+                    $b64Img = $reqData.coverBase64 -replace '^data:image\/[^;]+;base64,', ''
+                    [System.IO.File]::WriteAllBytes($tempImg, [Convert]::FromBase64String($b64Img))
+                } else {
+                    $defaultLogo = Join-Path $RootPath "assets\logo.jpg"
+                    Copy-Item $defaultLogo $tempImg -Force
+                }
+
+                # Guardar audio temporal
+                if ($reqData.audioBase64) {
+                    $b64Aud = $reqData.audioBase64 -replace '^data:audio\/[^;]+;base64,', ''
+                    [System.IO.File]::WriteAllBytes($tempAudio, [Convert]::FromBase64String($b64Aud))
+                } elseif ($reqData.audioUrl) {
+                    $wc = New-Object System.Net.WebClient
+                    $wc.Headers.Add("User-Agent", "Mozilla/5.0")
+                    $wc.DownloadFile($reqData.audioUrl, $tempAudio)
+                }
+
+                if ($FFmpegPath -and (Test-Path $FFmpegPath)) {
+                    $psi = New-Object System.Diagnostics.ProcessStartInfo
+                    $psi.FileName = $FFmpegPath
+                    $psi.Arguments = "-y -loop 1 -i `"$tempImg`" -i `"$tempAudio`" -vf `"$vf`" -c:v libx264 -preset ultrafast -tune stillimage -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart `"$tempVideo`""
+                    $psi.UseShellExecute = $false
+                    $psi.CreateNoWindow = $true
+
+                    $proc = [System.Diagnostics.Process]::Start($psi)
+                    $proc.WaitForExit(45000)
+
+                    if (Test-Path $tempVideo) {
+                        $videoBytes = [System.IO.File]::ReadAllBytes($tempVideo)
+                        $Response.ContentType = "video/mp4"
+                        $Response.AddHeader("Content-Disposition", "attachment; filename=`"$safeTitle - Video (by ORFEX).mp4`"")
+                        $Response.ContentLength64 = $videoBytes.Length
+                        $Response.StatusCode = 200
+                        $Response.OutputStream.Write($videoBytes, 0, $videoBytes.Length)
+                    } else {
+                        $Response.StatusCode = 500
+                        $errBytes = [System.Text.Encoding]::UTF8.GetBytes('{"error": "Fallo al generar video con FFmpeg"}')
+                        $Response.ContentType = "application/json"
+                        $Response.OutputStream.Write($errBytes, 0, $errBytes.Length)
+                    }
+                } else {
+                    $Response.StatusCode = 500
+                    $errBytes = [System.Text.Encoding]::UTF8.GetBytes('{"error": "FFmpeg no disponible en el servidor local"}')
+                    $Response.ContentType = "application/json"
+                    $Response.OutputStream.Write($errBytes, 0, $errBytes.Length)
+                }
+
+                Remove-Item $tempImg, $tempAudio, $tempVideo -ErrorAction SilentlyContinue
+            } catch {
+                $Response.StatusCode = 500
+                $err = [System.Text.Encoding]::UTF8.GetBytes('{"error": "' + $_.Exception.Message + '"}')
+                $Response.ContentType = "application/json"
+                $Response.OutputStream.Write($err, 0, $err.Length)
+            }
+            $Response.Close()
+            continue
+        }
+
+        # ======================================================================
         # Servir archivos estáticos de la aplicación
         # ======================================================================
         $FilePath = $RawPath.TrimStart('/')
