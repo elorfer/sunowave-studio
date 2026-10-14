@@ -206,9 +206,42 @@ const SunoService = {
     let uuid = this.extractUUID(clean);
     let targetUrl = clean;
 
-    // Si ya tenemos el UUID, usamos la URL canónica
+    // Si ya tenemos el UUID, usamos la URL canónica y probamos la API directa de Suno
     if (uuid) {
       targetUrl = this.getCanonicalUrl(uuid);
+      const directLinks = this.getDirectCDNLinks(uuid);
+
+      // PASO 1 (Ultra Rápido): Consultar API oficial de Suno Studio Clip en ~200ms
+      try {
+        onProgress('Obteniendo información oficial de la canción...');
+        const clipApiUrl = `https://studio-api.prod.suno.com/api/clip/${uuid}`;
+        const proxyClip = `/api/proxy?url=${encodeURIComponent(clipApiUrl)}`;
+        const clipRes = await fetch(proxyClip, { signal: AbortSignal.timeout(6000) });
+        if (clipRes.ok) {
+          const clipData = await clipRes.json();
+          if (clipData && clipData.id) {
+            const mediaUrl = clipData.media_urls?.[0]?.url || directLinks.audioM4a;
+            onProgress('¡Canción encontrada exitosamente!');
+            return {
+              id: clipData.id,
+              title: clipData.title || `Suno Track (${uuid.substring(0, 8)})`,
+              artist: clipData.display_name || clipData.handle || 'Suno Creator',
+              artistHandle: clipData.handle || 'suno_ai',
+              tags: clipData.metadata?.tags || 'AI Music',
+              duration: clipData.duration || 120,
+              lyrics: clipData.metadata?.prompt || 'Letra no disponible directamente.',
+              audioUrl: mediaUrl,
+              videoUrl: clipData.video_url || directLinks.videoMp4,
+              imageUrl: clipData.image_large_url || clipData.image_url || directLinks.imagePng,
+              modelVersion: clipData.major_model_version || 'v4',
+              isMango: true,
+              sourceMethod: 'studio-api'
+            };
+          }
+        }
+      } catch (clipErr) {
+        console.warn('API Clip directo no respondió, recurriendo a HTML scrape:', clipErr);
+      }
     }
 
     onProgress('Conectando con Suno...');
