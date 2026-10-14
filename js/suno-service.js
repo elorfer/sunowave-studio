@@ -26,7 +26,8 @@ const SunoService = {
    */
   extractUUID(input) {
     if (!input || typeof input !== 'string') return null;
-    const clean = input.trim();
+    let clean = input.trim();
+    try { clean = decodeURIComponent(clean); } catch(e) {}
     const match = clean.match(this.UUID_REGEX);
     return match ? match[0].toLowerCase() : null;
   },
@@ -36,7 +37,9 @@ const SunoService = {
    */
   isShortLink(input) {
     if (!input || typeof input !== 'string') return false;
-    return this.SHORT_LINK_REGEX.test(input.trim());
+    let clean = input.trim();
+    try { clean = decodeURIComponent(clean); } catch(e) {}
+    return this.SHORT_LINK_REGEX.test(clean);
   },
 
   /**
@@ -44,12 +47,12 @@ const SunoService = {
    */
   isValidInput(input) {
     if (!input || typeof input !== 'string') return false;
-    const clean = input.trim();
-    return Boolean(
-      this.extractUUID(clean) || 
-      this.SHORT_LINK_REGEX.test(clean) || 
-      this.SUNO_URL_REGEX.test(clean)
-    );
+    let clean = input.trim();
+    try { clean = decodeURIComponent(clean); } catch(e) {}
+    if (this.extractUUID(clean)) return true;
+    if (this.SHORT_LINK_REGEX.test(clean)) return true;
+    if (/suno\.(com|ai)/i.test(clean)) return true;
+    return false;
   },
 
   /**
@@ -142,9 +145,17 @@ const SunoService = {
     // D. Descargar flujo cifrado desde CloudFront
     const targetUrl = mediaUrl || `https://d2lwuy8qc234o3.cloudfront.net/1/clip/${uuid}.m4a`;
     onProgress('Descargando flujo cifrado desde CloudFront...');
-    const mediaRes = await fetch(targetUrl);
-    if (!mediaRes.ok) {
-      throw new Error(`Error descargando audio de CloudFront: HTTP ${mediaRes.status}`);
+    let mediaRes;
+    try {
+      mediaRes = await fetch(targetUrl);
+      if (!mediaRes.ok) throw new Error(`HTTP ${mediaRes.status}`);
+    } catch (cfErr) {
+      console.warn('Fetch directo CloudFront falló, intentando proxy:', cfErr);
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+      mediaRes = await fetch(proxyUrl);
+      if (!mediaRes.ok) {
+        throw new Error(`Error descargando audio de CloudFront: HTTP ${mediaRes.status}`);
+      }
     }
     const encryptedBuf = await mediaRes.arrayBuffer();
 
