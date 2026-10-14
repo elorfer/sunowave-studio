@@ -1043,6 +1043,87 @@ document.addEventListener('DOMContentLoaded', () => {
       progressPct.textContent    = `${Math.round(pct)}%`;
     }
 
+    /**
+     * Actualiza la tarjeta visual de canción seleccionada en el cortador
+     * @param {{ title, artist, coverUrl, status, badge }} info
+     */
+    function setSourceSelected({ title = '', artist = '', coverUrl = '', status = '', badge = '' } = {}) {
+      if (!selectedSrc) return;
+      selectedSrc.style.display = 'flex';
+
+      const thumbEl  = document.getElementById('trimmer-source-thumb');
+      const badgeEl  = document.getElementById('trimmer-source-badge');
+      const statusEl = document.getElementById('trimmer-source-status');
+      const subEl    = document.getElementById('trimmer-source-sub');
+
+      if (thumbEl && coverUrl) {
+        thumbEl.src = coverUrl;
+        thumbEl.onerror = () => { thumbEl.src = 'assets/logo.jpg'; };
+      }
+      if (srcLabel) srcLabel.textContent   = title || 'Canción Suno';
+      if (badgeEl)  badgeEl.textContent    = badge || '🎵 Suno';
+      if (statusEl) statusEl.textContent   = status || '';
+      if (subEl)    subEl.textContent      = artist || 'Suno Creator';
+    }
+
+    /**
+     * Descarga el audio desde la URL dada (con fallback a MP3 CDN), lo decodifica en un AudioBuffer
+     * y habilita los controles del cortador.
+     * @param {string} audioUrl
+     */
+    async function decodeAndSetupAudio(audioUrl) {
+      if (!audioUrl) {
+        showToast('No se encontró URL de audio para esta canción', 'error');
+        return;
+      }
+
+      // Extraer UUID para fallbacks
+      const uuid = SunoService.extractUUID(audioUrl);
+      const cdnMp3 = uuid ? `https://cdn1.suno.ai/${uuid}.mp3` : null;
+
+      // Candidatos de URL en orden de preferencia (priorizar MP3 que no requiere DRM)
+      const candidates = [];
+      if (cdnMp3) candidates.push(cdnMp3);
+      if (audioUrl && !audioUrl.includes('.m4a')) candidates.push(audioUrl);
+      if (audioUrl && audioUrl.includes('.m4a') && !cdnMp3) {
+        // m4a: intentar descifrarlo si tenemos DRM, si no, usar CDN PNG as last
+        candidates.push(`/api/proxy?url=${encodeURIComponent(audioUrl)}`);
+      }
+      if (uuid) candidates.push(`https://cdn1.suno.ai/${uuid}.mp4`);
+
+      let arrayBuf = null;
+      let usedName = 'pista';
+
+      if (srcStatus) srcStatus.textContent = '⏳ Descargando audio...';
+      previewStatus.textContent = 'Descargando audio para el cortador...';
+
+      for (let i = 0; i < candidates.length; i++) {
+        const url = candidates[i];
+        try {
+          previewStatus.textContent = `Conectando (intento ${i + 1}/${candidates.length})...`;
+          const resp = await fetch(url, { signal: AbortSignal.timeout(20000) });
+          if (!resp.ok) continue;
+          arrayBuf = await resp.arrayBuffer();
+          if (arrayBuf && arrayBuf.byteLength > 5000) {
+            usedName = currentSourceInfo ? currentSourceInfo.name : 'pista';
+            break;
+          }
+        } catch (fetchErr) {
+          console.warn(`Fallo intento ${i + 1} (${url}):`, fetchErr);
+        }
+      }
+
+      if (!arrayBuf || arrayBuf.byteLength < 5000) {
+        previewStatus.textContent = 'No se pudo descargar el audio. Intenta con otro enlace.';
+        if (srcStatus) srcStatus.textContent = '❌ Audio no disponible';
+        showToast('No se pudo descargar el audio de esta canción', 'error');
+        return;
+      }
+
+      await decodeAudioArrayBuffer(arrayBuf, usedName);
+      if (srcStatus) srcStatus.textContent = '✅ Audio listo para recortar';
+    }
+
     // Elementos de la tarjeta de canción en el cortador
     const srcThumb     = document.getElementById('trimmer-source-thumb');
     const srcBadge     = document.getElementById('trimmer-source-badge');
@@ -1134,9 +1215,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Cargar directamente pegando enlace o ID de Suno
     async function loadSunoTrackFromUrl(rawInput) {
-      let input = (rawInput || '').trim();
+      let input = (rawInput || (sunoUrlInput ? sunoUrlInput.value : '') || '').trim();
+
+      // Si la casilla está vacía pero ya hay una canción activa en el estudio, usarla directamente
       if (!input) {
-        showToast('Por favor escribe o pega un enlace de Suno', 'warning');
+        const active = currentSong || window.currentActiveSong;
+        if (active) {
+          loadSunoTrack();
+          return;
+        }
+      }
+
+      // Si está vacía, intentar leer automáticamente del portapapeles
+      if (!input && navigator.clipboard && navigator.clipboard.readText) {
+        try {
+          const clipText = await navigator.clipboard.readText();
+          if (clipText && clipText.trim() && (SunoService.extractUUID(clipText) || SunoService.isValidInput(clipText))) {
+            input = clipText.trim();
+            if (sunoUrlInput) sunoUrlInput.value = input;
+            showToast('Enlace tomado automáticamente del portapapeles', 'info');
+          }
+        } catch (clipErr) {}
+      }
+
+      if (!input) {
+        if (sunoUrlInput) {
+          sunoUrlInput.focus();
+          sunoUrlInput.style.borderColor = 'var(--neon-cyan)';
+          sunoUrlInput.style.boxShadow = '0 0 15px rgba(0,206,201,0.5)';
+          setTimeout(() => {
+            sunoUrlInput.style.borderColor = 'rgba(0,206,201,0.3)';
+            sunoUrlInput.style.boxShadow = 'none';
+          }, 2500);
+        }
+        showToast('⚠️ Pega primero el enlace de Suno en la casilla para cargarlo', 'warning');
         return;
       }
 
