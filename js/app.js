@@ -1389,7 +1389,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    btnUseSuno.addEventListener('click', loadSunoTrack);
+    if (btnUseSuno) btnUseSuno.addEventListener('click', loadSunoTrack);
 
     async function decodeAudioArrayBuffer(arrayBuf, name) {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -1411,16 +1411,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentAudioBuffer = audioBuf;
         const total = currentAudioBuffer.duration;
-        startSlider.max = total;
-        endSlider.max = total;
-        startSlider.value = 0;
-        endSlider.value = Math.min(30, total);
+        if (startSlider) { startSlider.max = total; startSlider.value = 0; }
+        if (endSlider)   { endSlider.max = total; endSlider.value = Math.min(30, total); }
         updateTimes();
 
-        btnPreview.disabled = false;
-        btnDlMp3.disabled   = false;
-        btnDlWav.disabled   = false;
-        previewStatus.textContent = `Listo para recortar (${formatSecs(total)} en total)`;
+        if (btnPreview) btnPreview.disabled = false;
+        if (btnDlMp3)   btnDlMp3.disabled   = false;
+        if (btnDlWav)   btnDlWav.disabled   = false;
+        if (previewStatus) previewStatus.textContent = `Listo para recortar (${formatSecs(total)} en total)`;
         showToast(`Audio "${name}" listo para recortar`, 'success');
         renderCoverPreview();
       } catch (err) {
@@ -1431,30 +1429,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateTimes() {
-      let st = parseFloat(startSlider.value) || 0;
-      let en = parseFloat(endSlider.value) || 0;
+      let st = parseFloat((startSlider && startSlider.value) || 0);
+      let en = parseFloat((endSlider && endSlider.value) || 0);
 
       if (st >= en) {
-        if (en < (parseFloat(startSlider.max) || 100)) {
-          en = Math.min(parseFloat(startSlider.max), st + 1);
-          endSlider.value = en;
+        if (en < (parseFloat((startSlider && startSlider.max) || 100))) {
+          en = Math.min(parseFloat((startSlider && startSlider.max) || 100), st + 1);
+          if (endSlider) endSlider.value = en;
         } else {
           st = Math.max(0, en - 1);
-          startSlider.value = st;
+          if (startSlider) startSlider.value = st;
         }
       }
 
       const dur = Math.max(0, en - st);
-      startValEl.textContent   = formatSecs(st);
-      endValEl.textContent     = formatSecs(en);
-      durValEl.textContent     = `${dur.toFixed(1)}s`;
-      startLabel.textContent   = formatSecs(st);
-      endLabel.textContent     = formatSecs(en);
-      btnPreview.textContent   = `▶️ Escuchar Muestra (${dur.toFixed(0)}s)`;
+      if (startValEl) startValEl.textContent = formatSecs(st);
+      if (endValEl)   endValEl.textContent   = formatSecs(en);
+      if (durValEl)   durValEl.textContent   = `${dur.toFixed(1)}s`;
+      if (startLabel) startLabel.textContent = formatSecs(st);
+      if (endLabel)   endLabel.textContent   = formatSecs(en);
+      if (btnPreview) btnPreview.textContent = `▶️ Escuchar Muestra (${dur.toFixed(0)}s)`;
     }
 
-    startSlider.addEventListener('input', updateTimes);
-    endSlider.addEventListener('input', updateTimes);
+    if (startSlider) startSlider.addEventListener('input', updateTimes);
+    if (endSlider)   endSlider.addEventListener('input', updateTimes);
 
     // Presets
     presetBtns.forEach(btn => {
@@ -1482,8 +1480,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Preescucha
-    btnPreview.addEventListener('click', () => {
+    if (btnPreview) btnPreview.addEventListener('click', () => {
       if (isPreviewPlaying) {
         stopPreview();
       } else {
@@ -1562,11 +1559,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    watermarkTextInp.addEventListener('input', () => {
+    if (watermarkTextInp) watermarkTextInp.addEventListener('input', () => {
       renderCoverPreview();
     });
 
-    customWatermarkInp.addEventListener('change', () => {
+    if (customWatermarkInp) customWatermarkInp.addEventListener('change', () => {
       const file = customWatermarkInp.files[0];
       if (!file) return;
       const reader = new FileReader();
@@ -1574,7 +1571,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const img = new Image();
         img.onload = () => {
           customWatermarkImg = img;
-          btnResetWatermark.style.display = 'inline-block';
+          if (btnResetWatermark) btnResetWatermark.style.display = 'inline-block';
           renderCoverPreview();
           showToast('Imagen de muestra personalizada cargada', 'success');
         };
@@ -1583,22 +1580,22 @@ document.addEventListener('DOMContentLoaded', () => {
       reader.readAsDataURL(file);
     });
 
-    btnResetWatermark.addEventListener('click', () => {
+    if (btnResetWatermark) btnResetWatermark.addEventListener('click', () => {
       customWatermarkImg = null;
-      customWatermarkInp.value = '';
+      if (customWatermarkInp) customWatermarkInp.value = '';
       btnResetWatermark.style.display = 'none';
       renderCoverPreview();
       showToast('Sello predeterminado restaurado', 'info');
     });
 
     // Descarga de Carátula Muestra
-    btnDlCover.addEventListener('click', async () => {
-      const text = watermarkTextInp.value.trim() || 'MUESTRA DEMO';
+    if (btnDlCover) btnDlCover.addEventListener('click', async () => {
+      const text = watermarkTextInp ? watermarkTextInp.value.trim() : 'MUESTRA DEMO';
       try {
         const blob = await window.AudioTrimmer.generateWatermarkedCoverBlob(
           coverBaseUrl,
           customWatermarkImg,
-          text
+          text || 'MUESTRA DEMO'
         );
         const base = currentSourceInfo ? currentSourceInfo.name : 'Suno';
         const filename = `${base} - Portada MUESTRA.jpg`;
@@ -1617,17 +1614,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       stopPreview();
 
-      const st = parseFloat(startSlider.value) || 0;
-      const en = parseFloat(endSlider.value) || 0;
+      const st = parseFloat((startSlider && startSlider.value) || 0);
+      const en = parseFloat((endSlider && endSlider.value) || 0);
       const dur = Math.max(0.1, en - st);
 
-      btnDlMp3.disabled = true;
-      btnDlWav.disabled = true;
-      progressWrap.style.display = 'block';
+      if (btnDlMp3) btnDlMp3.disabled = true;
+      if (btnDlWav) btnDlWav.disabled = true;
+      if (progressWrap) progressWrap.style.display = 'block';
       setProgress(10, `Recortando fragmento de ${dur.toFixed(1)} segundos...`);
 
       const base = currentSourceInfo ? currentSourceInfo.name : 'Pista';
-      const applySoundWatermark = chkWatermarkSound.checked;
+      const applySoundWatermark = chkWatermarkSound ? chkWatermarkSound.checked : false;
 
       setTimeout(async () => {
         try {
@@ -1656,21 +1653,21 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           setProgress(100, '¡Muestra exportada con éxito!');
-          setTimeout(() => { progressWrap.style.display = 'none'; }, 2500);
+          setTimeout(() => { if (progressWrap) progressWrap.style.display = 'none'; }, 2500);
           showToast(`¡Muestra ${format.toUpperCase()} descargada para tu cliente!`, 'success');
         } catch (err) {
           console.error('Error al exportar muestra:', err);
           showToast('Error al exportar la muestra de audio', 'error');
-          progressWrap.style.display = 'none';
+          if (progressWrap) progressWrap.style.display = 'none';
         } finally {
-          btnDlMp3.disabled = false;
-          btnDlWav.disabled = false;
+          if (btnDlMp3) btnDlMp3.disabled = false;
+          if (btnDlWav) btnDlWav.disabled = false;
         }
       }, 50);
     }
 
-    btnDlMp3.addEventListener('click', () => processAndDownloadAudio('mp3'));
-    btnDlWav.addEventListener('click', () => processAndDownloadAudio('wav'));
+    if (btnDlMp3) btnDlMp3.addEventListener('click', () => processAndDownloadAudio('mp3'));
+    if (btnDlWav) btnDlWav.addEventListener('click', () => processAndDownloadAudio('wav'));
 
     // Inicializar carátula por defecto
     renderCoverPreview();
