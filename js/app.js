@@ -1047,9 +1047,12 @@ document.addEventListener('DOMContentLoaded', () => {
      * Actualiza la tarjeta visual de canción seleccionada en el cortador
      * @param {{ title, artist, coverUrl, status, badge }} info
      */
+    /**
+     * Actualiza la tarjeta visual de canción seleccionada en el cortador
+     * @param {{ title, artist, coverUrl, status, badge }} info
+     */
     function setSourceSelected({ title = '', artist = '', coverUrl = '', status = '', badge = '' } = {}) {
-      if (!selectedSrc) return;
-      selectedSrc.style.display = 'flex';
+      if (selectedSrc) selectedSrc.style.display = 'flex';
 
       const thumbEl  = document.getElementById('trimmer-source-thumb');
       const badgeEl  = document.getElementById('trimmer-source-badge');
@@ -1060,68 +1063,162 @@ document.addEventListener('DOMContentLoaded', () => {
         thumbEl.src = coverUrl;
         thumbEl.onerror = () => { thumbEl.src = 'assets/logo.jpg'; };
       }
-      if (srcLabel) srcLabel.textContent   = title || 'Canción Suno';
-      if (badgeEl)  badgeEl.textContent    = badge || '🎵 Suno';
-      if (statusEl) statusEl.textContent   = status || '';
-      if (subEl)    subEl.textContent      = artist || 'Suno Creator';
+      if (srcLabel) srcLabel.textContent = title || 'Canción Suno';
+      if (badgeEl)  badgeEl.textContent  = badge || '🎵 Suno';
+      if (statusEl) statusEl.textContent = status || '';
+      if (subEl)    subEl.textContent    = artist || 'Suno Creator';
     }
 
     /**
-     * Descarga el audio desde la URL dada (con fallback a MP3 CDN), lo decodifica en un AudioBuffer
-     * y habilita los controles del cortador.
-     * @param {string} audioUrl
+     * Configura los deslizadores y habilita botones una vez obtenido el AudioBuffer
      */
-    async function decodeAndSetupAudio(audioUrl) {
-      if (!audioUrl) {
-        showToast('No se encontró URL de audio para esta canción', 'error');
+    function finishSetupWithBuffer(audioBuf, name) {
+      currentAudioBuffer = audioBuf;
+      const total = currentAudioBuffer.duration;
+      if (startSlider) { startSlider.max = total; startSlider.value = 0; }
+      if (endSlider)   { endSlider.max = total; endSlider.value = Math.min(30, total); }
+      updateTimes();
+
+      if (btnPreview) btnPreview.disabled = false;
+      if (btnDlMp3)   btnDlMp3.disabled   = false;
+      if (btnDlWav)   btnDlWav.disabled   = false;
+      if (srcStatus)  srcStatus.textContent = '✅ Listo para recortar';
+      if (previewStatus) previewStatus.textContent = `Listo para recortar (${formatSecs(total)} en total)`;
+      showToast(`¡Audio "${name}" listo para recortar!`, 'success');
+      renderCoverPreview();
+    }
+
+    /**
+     * Decodifica un ArrayBuffer de audio mediante Web Audio API
+     */
+    async function decodeAudioArrayBuffer(arrayBuf, name) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioContextClass();
+      if (ctx.state === 'suspended') {
+        try { await ctx.resume(); } catch (e) {}
+      }
+
+      try {
+        if (previewStatus) previewStatus.textContent = 'Decodificando ondas de audio...';
+        let audioBuf;
+        try {
+          audioBuf = await ctx.decodeAudioData(arrayBuf.slice(0));
+        } catch (e1) {
+          audioBuf = await new Promise((resolve, reject) => {
+            ctx.decodeAudioData(arrayBuf.slice(0), resolve, reject);
+          });
+        }
+
+        if (currentSong) currentSong.cachedAudioBuffer = audioBuf;
+        if (window.currentActiveSong) window.currentActiveSong.cachedAudioBuffer = audioBuf;
+
+        finishSetupWithBuffer(audioBuf, name);
+      } catch (err) {
+        console.error('Error decodificando buffer:', err);
+        if (previewStatus) previewStatus.textContent = 'Formato no soportado por el navegador.';
+        if (srcStatus) srcStatus.textContent = '❌ Error al decodificar';
+        showToast('No se pudo decodificar el archivo de audio en tu navegador', 'error');
+      }
+    }
+
+    /**
+     * Descarga y prepara el audio para el cortador (con soporte nativo para descifrado Mango DRM de Suno)
+     * @param {string} audioUrl
+     * @param {Object} songObj
+     */
+    async function decodeAndSetupAudio(audioUrl, songObj = null) {
+      const active = songObj || currentSong || window.currentActiveSong || {};
+      const uuid = active.id || SunoService.extractUUID(audioUrl) || (active.audioUrl && SunoService.extractUUID(active.audioUrl));
+      const usedName = (currentSourceInfo && currentSourceInfo.name) || active.title || 'pista';
+
+      if (srcStatus) srcStatus.textContent = '⏳ Preparando audio...';
+      if (previewStatus) previewStatus.textContent = 'Obteniendo audio de alta resolución...';
+
+      // 1. Si ya tenemos el AudioBuffer pre-decodificado en memoria:
+      if (active.cachedAudioBuffer) {
+        finishSetupWithBuffer(active.cachedAudioBuffer, usedName);
         return;
       }
 
-      // Extraer UUID para fallbacks
-      const uuid = SunoService.extractUUID(audioUrl);
-      const cdnMp3 = uuid ? `https://cdn1.suno.ai/${uuid}.mp3` : null;
-
-      // Candidatos de URL en orden de preferencia (priorizar MP3 que no requiere DRM)
-      const candidates = [];
-      if (cdnMp3) candidates.push(cdnMp3);
-      if (audioUrl && !audioUrl.includes('.m4a')) candidates.push(audioUrl);
-      if (audioUrl && audioUrl.includes('.m4a') && !cdnMp3) {
-        // m4a: intentar descifrarlo si tenemos DRM, si no, usar CDN PNG as last
-        candidates.push(`/api/proxy?url=${encodeURIComponent(audioUrl)}`);
-      }
-      if (uuid) candidates.push(`https://cdn1.suno.ai/${uuid}.mp4`);
-
-      let arrayBuf = null;
-      let usedName = 'pista';
-
-      if (srcStatus) srcStatus.textContent = '⏳ Descargando audio...';
-      previewStatus.textContent = 'Descargando audio para el cortador...';
-
-      for (let i = 0; i < candidates.length; i++) {
-        const url = candidates[i];
+      // 2. Si ya tenemos un Blob descifrado en memoria:
+      if (active.decryptedBlob) {
         try {
-          previewStatus.textContent = `Conectando (intento ${i + 1}/${candidates.length})...`;
-          const resp = await fetch(url, { signal: AbortSignal.timeout(20000) });
-          if (!resp.ok) continue;
-          arrayBuf = await resp.arrayBuffer();
-          if (arrayBuf && arrayBuf.byteLength > 5000) {
-            usedName = currentSourceInfo ? currentSourceInfo.name : 'pista';
-            break;
-          }
-        } catch (fetchErr) {
-          console.warn(`Fallo intento ${i + 1} (${url}):`, fetchErr);
+          if (previewStatus) previewStatus.textContent = 'Decodificando ondas de audio...';
+          const arrayBuf = await active.decryptedBlob.arrayBuffer();
+          await decodeAudioArrayBuffer(arrayBuf, usedName);
+          return;
+        } catch (e) {
+          console.warn('Fallo decodificación de decryptedBlob en memoria:', e);
         }
       }
 
+      // 3. Descifrado directo Mango DRM (Suno v4 / v4.5 / v5)
+      if (uuid) {
+        try {
+          if (srcStatus) srcStatus.textContent = '🔓 Descifrando audio de alta fidelidad...';
+          if (previewStatus) previewStatus.textContent = 'Descifrando stream oficial de Suno...';
+
+          const mediaUrl = (audioUrl && !audioUrl.includes('forbidden') && audioUrl.includes('cloudfront.net'))
+            ? audioUrl
+            : `https://d2lwuy8qc234o3.cloudfront.net/1/clip/${uuid}.m4a`;
+
+          const decryptedBlob = await SunoService.decryptMangoAudio(uuid, mediaUrl, (msg) => {
+            if (previewStatus) previewStatus.textContent = msg;
+            if (srcStatus) srcStatus.textContent = msg;
+          });
+
+          if (decryptedBlob && decryptedBlob.size > 5000) {
+            active.decryptedBlob = decryptedBlob;
+            active.decryptedBlobUrl = URL.createObjectURL(decryptedBlob);
+            const arrayBuf = await decryptedBlob.arrayBuffer();
+            await decodeAudioArrayBuffer(arrayBuf, usedName);
+            return;
+          }
+        } catch (mangoErr) {
+          console.warn('Descifrado Mango falló en cortador, recurriendo a fallbacks:', mangoErr);
+        }
+      }
+
+      // 4. Fallback: descarga a través de proxy o CDN directa
+      const candidates = [];
+      if (audioUrl && !audioUrl.includes('.m4a')) {
+        candidates.push(`/api/proxy?url=${encodeURIComponent(audioUrl)}`);
+        candidates.push(audioUrl);
+      }
+      if (uuid) {
+        candidates.push(`/api/proxy?url=${encodeURIComponent(`https://cdn1.suno.ai/${uuid}.mp3`)}`);
+        candidates.push(`/api/proxy?url=${encodeURIComponent(`https://cdn1.suno.ai/${uuid}.mp4`)}`);
+        candidates.push(`https://cdn1.suno.ai/${uuid}.mp3`);
+        candidates.push(`https://cdn1.suno.ai/${uuid}.mp4`);
+      }
+      if (active.videoUrl) {
+        candidates.push(`/api/proxy?url=${encodeURIComponent(active.videoUrl)}`);
+        candidates.push(active.videoUrl);
+      }
+
+      let arrayBuf = null;
+      for (let i = 0; i < candidates.length; i++) {
+        const url = candidates[i];
+        try {
+          if (previewStatus) previewStatus.textContent = `Descargando audio alternativo (${i + 1}/${candidates.length})...`;
+          const resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
+          if (!resp.ok) continue;
+          const buf = await resp.arrayBuffer();
+          if (buf && buf.byteLength > 5000) {
+            arrayBuf = buf;
+            break;
+          }
+        } catch (err) {}
+      }
+
       if (!arrayBuf || arrayBuf.byteLength < 5000) {
-        previewStatus.textContent = 'No se pudo descargar el audio. Intenta con otro enlace.';
+        if (previewStatus) previewStatus.textContent = 'No se pudo obtener el audio. Intenta con otro enlace.';
         if (srcStatus) srcStatus.textContent = '❌ Audio no disponible';
         showToast('No se pudo descargar el audio de esta canción', 'error');
         return;
       }
 
       await decodeAudioArrayBuffer(arrayBuf, usedName);
-      if (srcStatus) srcStatus.textContent = '✅ Audio listo para recortar';
     }
 
     // Elementos de la tarjeta de canción en el cortador
@@ -1168,10 +1265,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedSrc) selectedSrc.style.display = 'none';
         if (sunoUrlInput) sunoUrlInput.value = '';
         currentAudioBuffer = null;
-        btnPreview.disabled = true;
-        btnDlMp3.disabled   = true;
-        btnDlWav.disabled   = true;
-        previewStatus.textContent = 'Carga un audio para preescuchar';
+        if (btnPreview) btnPreview.disabled = true;
+        if (btnDlMp3)   btnDlMp3.disabled   = true;
+        if (btnDlWav)   btnDlWav.disabled   = true;
+        if (previewStatus) previewStatus.textContent = 'Carga un audio para preescuchar';
         showToast('Canción desvinculada del cortador', 'info');
       });
     }
@@ -1210,11 +1307,14 @@ document.addEventListener('DOMContentLoaded', () => {
         badge: '🎵 Canción Suno'
       });
       renderCoverPreview();
-      await decodeAndSetupAudio(active.audioUrl || active.videoUrl);
+      await decodeAndSetupAudio(active.audioUrl || active.videoUrl, active);
     }
 
     // Cargar directamente pegando enlace o ID de Suno
+    let isTrackLoading = false;
     async function loadSunoTrackFromUrl(rawInput) {
+      if (isTrackLoading) return;
+
       let input = (rawInput || (sunoUrlInput ? sunoUrlInput.value : '') || '').trim();
 
       // Si la casilla está vacía pero ya hay una canción activa en el estudio, usarla directamente
@@ -1261,11 +1361,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      let queryTarget = input;
+      if (extractedUuid) {
+        queryTarget = `https://suno.com/song/${extractedUuid}`;
+      } else {
+        const urlMatch = input.match(/https?:\/\/[^\s]+/);
+        if (urlMatch) queryTarget = urlMatch[0];
+      }
+
       if (btnFetchUrl) {
         btnFetchUrl.disabled = true;
         btnFetchUrl.innerHTML = '<span>⏳</span> Obteniendo...';
       }
-      previewStatus.textContent = 'Consultando datos de la canción en Suno...';
+      if (previewStatus) previewStatus.textContent = 'Consultando datos de la canción en Suno...';
 
       // Mostrar tarjeta de inmediato en progreso para dar retroalimentación instantánea
       setSourceSelected({
@@ -1277,8 +1385,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       try {
-        const songData = await SunoService.resolveSong(input, (msg) => {
-          previewStatus.textContent = msg;
+        isTrackLoading = true;
+        const songData = await SunoService.resolveSong(queryTarget, (msg) => {
+          if (previewStatus) previewStatus.textContent = msg;
           if (srcStatus) srcStatus.textContent = msg;
         });
 
@@ -1288,7 +1397,7 @@ document.addEventListener('DOMContentLoaded', () => {
           albumArt: songData.imageUrl,
           creator: songData.artist
         };
-        window._trimmerNotifySong?.(songData);
+        if (window._trimmerNotifySong) window._trimmerNotifySong(songData);
 
         coverBaseUrl = songData.imageUrl || 'assets/logo.jpg';
         currentSourceInfo = {
@@ -1308,17 +1417,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Actualizar lienzo de la carátula con sello MUESTRA de inmediato
         renderCoverPreview();
 
-        // Decodificar el buffer de audio para el cortador con tolerancia a fallos
-        await decodeAndSetupAudio(songData.audioUrl || songData.videoUrl);
+        // Decodificar el buffer de audio para el cortador con tolerancia a fallos y soporte Mango DRM
+        await decodeAndSetupAudio(songData.audioUrl || songData.videoUrl, songData);
 
-        if (srcStatus) srcStatus.textContent = '✅ Listo para recortar';
-        showToast(`¡"${songData.title}" cargada y lista para recortar!`, 'success');
       } catch (err) {
         console.error('Error cargando enlace en cortador:', err);
-        previewStatus.textContent = 'Error al cargar canción desde Suno.';
+        if (previewStatus) previewStatus.textContent = 'Error al cargar canción desde Suno.';
         if (srcStatus) srcStatus.textContent = '❌ Error de conexión';
         showToast(err.message || 'No se pudo obtener el audio de Suno', 'error');
       } finally {
+        isTrackLoading = false;
         if (btnFetchUrl) {
           btnFetchUrl.disabled = false;
           btnFetchUrl.innerHTML = '<span>⚡</span> Cargar Canción';
@@ -1391,41 +1499,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnUseSuno) btnUseSuno.addEventListener('click', loadSunoTrack);
 
-    async function decodeAudioArrayBuffer(arrayBuf, name) {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      const ctx = new AudioContextClass();
-      if (ctx.state === 'suspended') {
-        try { await ctx.resume(); } catch (e) {}
-      }
+    // Archivo de audio local (Subir o Soltar archivo)
+    if (fileInput) {
+      fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const name = file.name.replace(/\.[^.]+$/, '');
+        currentSourceInfo = { name, coverUrl: 'assets/logo.jpg' };
+        setSourceSelected({
+          title: file.name,
+          artist: 'Archivo Local',
+          coverUrl: 'assets/logo.jpg',
+          status: '⏳ Decodificando archivo...',
+          badge: '📁 Archivo Local'
+        });
+        const arrayBuf = await file.arrayBuffer();
+        await decodeAudioArrayBuffer(arrayBuf, name);
+      });
+    }
 
-      try {
-        previewStatus.textContent = 'Decodificando ondas de audio...';
-        let audioBuf;
-        try {
-          audioBuf = await ctx.decodeAudioData(arrayBuf.slice(0));
-        } catch (e1) {
-          audioBuf = await new Promise((resolve, reject) => {
-            ctx.decodeAudioData(arrayBuf.slice(0), resolve, reject);
-          });
-        }
-
-        currentAudioBuffer = audioBuf;
-        const total = currentAudioBuffer.duration;
-        if (startSlider) { startSlider.max = total; startSlider.value = 0; }
-        if (endSlider)   { endSlider.max = total; endSlider.value = Math.min(30, total); }
-        updateTimes();
-
-        if (btnPreview) btnPreview.disabled = false;
-        if (btnDlMp3)   btnDlMp3.disabled   = false;
-        if (btnDlWav)   btnDlWav.disabled   = false;
-        if (previewStatus) previewStatus.textContent = `Listo para recortar (${formatSecs(total)} en total)`;
-        showToast(`Audio "${name}" listo para recortar`, 'success');
-        renderCoverPreview();
-      } catch (err) {
-        console.error('Error decodificando buffer:', err);
-        previewStatus.textContent = 'Formato no soportado por el navegador.';
-        showToast('No se pudo decodificar el archivo de audio', 'error');
-      }
+    if (dropZone) {
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--neon-cyan)';
+      });
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = 'rgba(0, 206, 201, 0.3)';
+      });
+      dropZone.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'rgba(0, 206, 201, 0.3)';
+        const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (!file) return;
+        const name = file.name.replace(/\.[^.]+$/, '');
+        currentSourceInfo = { name, coverUrl: 'assets/logo.jpg' };
+        setSourceSelected({
+          title: file.name,
+          artist: 'Archivo Local',
+          coverUrl: 'assets/logo.jpg',
+          status: '⏳ Decodificando archivo...',
+          badge: '📁 Archivo Local'
+        });
+        const arrayBuf = await file.arrayBuffer();
+        await decodeAudioArrayBuffer(arrayBuf, name);
+      });
     }
 
     function updateTimes() {
@@ -1538,8 +1655,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Carátula de Muestra
     async function renderCoverPreview() {
-      const text = watermarkTextInp.value.trim() || 'MUESTRA DEMO';
+      if (!coverCanvas) return;
+      const text = (watermarkTextInp ? watermarkTextInp.value.trim() : '') || 'MUESTRA DEMO';
       try {
+        if (!window.AudioTrimmer || !window.AudioTrimmer.generateWatermarkedCoverBlob) return;
         const blob = await window.AudioTrimmer.generateWatermarkedCoverBlob(
           coverBaseUrl,
           customWatermarkImg,
@@ -1548,9 +1667,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = URL.createObjectURL(blob);
         const img = new Image();
         img.onload = () => {
+          if (!coverCanvas) return;
           const ctx = coverCanvas.getContext('2d');
-          ctx.clearRect(0, 0, coverCanvas.width, coverCanvas.height);
-          ctx.drawImage(img, 0, 0, coverCanvas.width, coverCanvas.height);
+          if (ctx) {
+            ctx.clearRect(0, 0, coverCanvas.width, coverCanvas.height);
+            ctx.drawImage(img, 0, 0, coverCanvas.width, coverCanvas.height);
+          }
           URL.revokeObjectURL(url);
         };
         img.src = url;
@@ -1638,7 +1760,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           // 3. Codificar según formato
-          if (format === 'mp3') {
+          if (format === 'mp3' && window.lamejs) {
             setProgress(50, 'Codificando MP3 a 320kbps...');
             const mp3Blob = await window.AudioDownloader.encodeMp3WithLame(sliced, (pct, msg) => {
               setProgress(pct, msg);
