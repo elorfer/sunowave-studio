@@ -142,15 +142,17 @@ const SunoService = {
     );
     const initialCounter = new Uint8Array(rawIv);
 
-    // D. Descargar flujo cifrado desde CloudFront
-    const targetUrl = mediaUrl || `https://d2lwuy8qc234o3.cloudfront.net/1/clip/${uuid}.m4a`;
+    // D. Descargar flujo cifrado desde CloudFront (.m4a cifrado)
+    const targetUrl = (mediaUrl && mediaUrl.includes('cloudfront.net') && mediaUrl.includes('.m4a'))
+      ? mediaUrl
+      : `https://d2lwuy8qc234o3.cloudfront.net/1/clip/${uuid}.m4a`;
     onProgress('Descargando flujo cifrado desde CloudFront...');
     let mediaRes;
     try {
-      mediaRes = await fetch(targetUrl);
+      mediaRes = await fetch(targetUrl, { signal: AbortSignal.timeout(3500) });
       if (!mediaRes.ok) throw new Error(`HTTP ${mediaRes.status}`);
     } catch (cfErr) {
-      console.warn('Fetch directo CloudFront falló, intentando proxy:', cfErr);
+      console.warn('Fetch directo CloudFront falló o expiró, usando proxy:', cfErr);
       const proxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
       mediaRes = await fetch(proxyUrl);
       if (!mediaRes.ok) {
