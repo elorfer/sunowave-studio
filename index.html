@@ -359,17 +359,20 @@
               <div style="flex:1; min-width:240px; position:relative;">
                 <input type="text" id="trimmer-suno-url" placeholder="Pega aquí el enlace de Suno (ej: https://suno.com/song/... o UUID)"
                   style="width:100%; padding:12px 85px 12px 14px; background:rgba(10,14,26,0.8); border:1px solid rgba(0,206,201,0.3); border-radius:var(--radius-sm); color:var(--text-main); font-size:13px; outline:none; transition:border-color .2s ease;">
-                <button type="button" id="trimmer-btn-paste-clipboard" title="Pegar del portapapeles"
+                <button type="button" id="trimmer-btn-paste-clipboard" onclick="window._trimmerPasteAndLoad && window._trimmerPasteAndLoad()" title="Pegar del portapapeles"
                   style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:4px; padding:5px 10px; cursor:pointer; color:var(--text-main); font-size:12px; font-weight:600; display:flex; align-items:center; gap:4px; transition:all .2s ease;">
                   📋 Pegar
                 </button>
               </div>
-              <button type="button" id="trimmer-btn-fetch-url" class="btn btn-primary" style="padding:11px 22px; font-weight:700; white-space:nowrap; display:flex; align-items:center; gap:8px; font-size:13px;">
+              <button type="button" id="trimmer-btn-fetch-url" onclick="window.loadTrimmerTrackManual && window.loadTrimmerTrackManual()" class="btn btn-primary" style="padding:11px 22px; font-weight:700; white-space:nowrap; display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                 <span>⚡</span> Cargar Canción
+              </button>
+              <button type="button" id="trimmer-btn-fetch-alt" onclick="window.loadTrimmerTrackManual && window.loadTrimmerTrackManual()" class="btn" style="padding:11px 22px; font-weight:700; white-space:nowrap; display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; background:linear-gradient(135deg, #6c5ce7, #00cec9); color:#ffffff; border:none; border-radius:var(--radius-sm); box-shadow:0 4px 14px rgba(108,92,231,0.4);">
+                <span>🚀</span> Cargar y Procesar
               </button>
             </div>
             <div style="font-size:11px; color:var(--text-muted); margin-top:8px;">
-              💡 <strong>Instantáneo:</strong> Al pegar un enlace con <kbd style="background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:#fff;">Ctrl+V</kbd> se detecta y carga de inmediato sin hacer clic.
+              💡 <strong>Instantáneo:</strong> Puedes pegar tu enlace con <kbd style="background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;color:#fff;">Ctrl+V</kbd> o pulsar cualquiera de los dos botones para cargar el audio de Suno.
             </div>
 
             <!-- Tarjeta visual de canción activa en el cortador (inmediatamente visible) -->
@@ -776,10 +779,10 @@
   </div>
 
   <!-- Scripts Principales de SunoWave -->
-  <script src="js/suno-service.js?v=15"></script>
-  <script src="js/audio-converter.js?v=15"></script>
-  <script src="js/visualizer.js?v=15"></script>
-  <script src="js/audio-trimmer.js?v=15"></script>
-  <script src="js/app.js?v=15"></script>
+  <script src="js/suno-service.js?v=16"></script>
+  <script src="js/audio-converter.js?v=16"></script>
+  <script src="js/visualizer.js?v=16"></script>
+  <script src="js/audio-trimmer.js?v=16"></script>
+  <script src="js/app.js?v=16"></script>
 </body>
 </html>
