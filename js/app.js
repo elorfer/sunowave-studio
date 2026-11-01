@@ -766,6 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ============================================================
   (function initTranscriber() {
     const btnUseSuno    = document.getElementById('txr-btn-use-suno');
+    if (!btnUseSuno) return; // Módulo de transcripción no presente en este DOM
     const txrSunoName   = document.getElementById('txr-suno-name');
     const fileInput     = document.getElementById('txr-file-input');
     const selectedSrc   = document.getElementById('txr-selected-source');
@@ -1369,9 +1370,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (urlMatch) queryTarget = urlMatch[0];
       }
 
+      const btnFetchAlt = document.getElementById('trimmer-btn-fetch-alt');
       if (btnFetchUrl) {
         btnFetchUrl.disabled = true;
         btnFetchUrl.innerHTML = '<span>⏳</span> Obteniendo...';
+      }
+      if (btnFetchAlt) {
+        btnFetchAlt.disabled = true;
+        btnFetchAlt.innerHTML = '<span>⏳</span> Procesando...';
       }
       if (previewStatus) previewStatus.textContent = 'Consultando datos de la canción en Suno...';
 
@@ -1431,12 +1437,49 @@ document.addEventListener('DOMContentLoaded', () => {
           btnFetchUrl.disabled = false;
           btnFetchUrl.innerHTML = '<span>⚡</span> Cargar Canción';
         }
+        if (btnFetchAlt) {
+          btnFetchAlt.disabled = false;
+          btnFetchAlt.innerHTML = '<span>🚀</span> Cargar y Procesar';
+        }
       }
     }
+
+    // Exportar función global para invocación directa desde HTML
+    window.loadTrimmerTrackManual = function() {
+      const inp = document.getElementById('trimmer-suno-url');
+      loadSunoTrackFromUrl(inp ? inp.value : '');
+    };
+
+    window._trimmerPasteAndLoad = async function() {
+      const inp = document.getElementById('trimmer-suno-url');
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const text = await navigator.clipboard.readText();
+          if (text && text.trim()) {
+            if (inp) inp.value = text.trim();
+            showToast('Enlace pegado del portapapeles', 'info');
+            loadSunoTrackFromUrl(text.trim());
+            return;
+          }
+        }
+      } catch (e) {}
+      if (inp) {
+        inp.focus();
+        inp.select();
+      }
+      showToast('Presiona Ctrl+V para pegar tu enlace de Suno', 'info');
+    };
 
     // Listeners para la entrada de enlace directo
     if (btnFetchUrl) {
       btnFetchUrl.addEventListener('click', () => {
+        loadSunoTrackFromUrl(sunoUrlInput ? sunoUrlInput.value : '');
+      });
+    }
+
+    const btnFetchAlt = document.getElementById('trimmer-btn-fetch-alt');
+    if (btnFetchAlt) {
+      btnFetchAlt.addEventListener('click', () => {
         loadSunoTrackFromUrl(sunoUrlInput ? sunoUrlInput.value : '');
       });
     }
