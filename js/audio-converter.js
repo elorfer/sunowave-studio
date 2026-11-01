@@ -251,11 +251,15 @@ const AudioDownloader = {
 
   /**
    * Codifica un AudioBuffer a MP3 de alta velocidad usando LameJS con bloques optimizados
+   * @param {AudioBuffer} audioBuffer
+   * @param {Function} onProgress
+   * @param {number} targetKbps - 320, 256, 192 o 128 kbps
    */
-  async encodeMp3WithLame(audioBuffer, onProgress = () => {}) {
+  async encodeMp3WithLame(audioBuffer, onProgress = () => {}, targetKbps = 320) {
     const channels = audioBuffer.numberOfChannels;
     const sampleRate = audioBuffer.sampleRate;
-    const kbps = sampleRate >= 32000 ? 320 : 160;
+    const safeKbps = parseInt(targetKbps, 10) || 320;
+    const kbps = sampleRate >= 32000 ? safeKbps : Math.min(safeKbps, 160);
     const mp3encoder = new window.lamejs.Mp3Encoder(channels, sampleRate, kbps);
 
     const samplesLeft = audioBuffer.getChannelData(0);
